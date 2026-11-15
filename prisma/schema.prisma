@@ -1,0 +1,1194 @@
+// TrackMe database schema
+//
+// Conventions
+// - Calendar dates that belong to the user's local day are stored as
+//   `String` in `YYYY-MM-DD` form (interpreted in the user's time zone,
+//   default Asia/Kolkata). Times of day are stored as minutes from local
+//   midnight (`startMinute`). This keeps scheduling deterministic and
+//   independent of server time zone.
+// - Real instants (completion timestamps, audit entries) are `DateTime` (UTC).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Auth (Better Auth) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  settings          UserSettings?
+  profile           Profile?
+  categories        Category[]
+  tasks             Task[]
+  taskCompletions   TaskCompletion[]
+  recurringTasks    RecurringTask[]
+  weeklyTargets     WeeklyTarget[]
+  goals             Goal[]
+  events            Event[]
+  subjects          UniversitySubject[]
+  timetableSlots    TimetableSlot[]
+  workBlocks        WorkBlock[]
+  examPeriods       ExamPeriod[]
+  learningSessions  LearningSession[]
+  gymSessions       GymSession[]
+  healthLogs        HealthLog[]
+  jobApplications   JobApplication[]
+  networkingLogs    NetworkingLog[]
+  achievementsPro   ProfessionalAchievement[]
+  mbaActivities     MBAActivity[]
+  creativeProjects  CreativeProject[]
+  creativeSessions  CreativeSession[]
+  transactions      FinancialTransaction[]
+  weeklyReviews     WeeklyReview[]
+  monthlyReviews    MonthlyReview[]
+  userAchievements  UserAchievement[]
+  dailyScores       DailyScore[]
+  scheduleVersions  ScheduleVersion[]
+  scheduleChanges   ScheduleChange[]
+  notifications     Notification[]
+  journalEntries    JournalEntry[]
+  readingItems      ReadingItem[]
+  sideProjectLogs   SideProjectLog[]
+  dayTemplates      DayTemplate[]
+  dayOverrides      DayOverride[]
+  protectedBlocks   ProtectedBlock[]
+  energyWindows     EnergyWindow[]
+  habits            Habit[]
+  habitLogs         HabitLog[]
+  integrations      Integration[]
+  emailInsights     EmailInsight[]
+  githubActivity    GithubActivity[]
+  aiChatActivity    AiChatActivity[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+enum SchedulingMode {
+  NORMAL
+  EXAM
+  RECOVERY
+}
+
+enum CategoryKey {
+  ACADEMICS
+  CAREER
+  AI
+  MBA
+  FITNESS
+  CREATIVITY
+  PERSONAL
+  FINANCE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+/// Scheduling classification â€” drives what the engine may move.
+enum TaskKind {
+  FIXED
+  HIGH_PRIORITY
+  RECURRING
+  FLEXIBLE
+  OPTIONAL
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  RESCHEDULED
+  MISSED
+}
+
+enum TaskSource {
+  MANUAL
+  RECURRING
+  PLANNER
+  ONBOARDING
+}
+
+enum EventType {
+  EXAM
+  INTERNAL_EXAM
+  PRACTICAL_EXAM
+  VIVA
+  ASSIGNMENT
+  PROJECT_SUBMISSION
+  INTERVIEW
+  WORK_DEADLINE
+  MEETING
+  HOLIDAY
+  COLLEGE_EVENT
+  PERSONAL
+  OTHER
+}
+
+enum TimetableKind {
+  LECTURE
+  PRACTICAL
+  TUTORIAL
+  OTHER
+}
+
+enum LearningStatus {
+  RUNNING
+  PAUSED
+  COMPLETED
+}
+
+enum GymType {
+  STRENGTH
+  CARDIO
+  WALK
+  SPORT
+  MOBILITY
+  OTHER
+}
+
+enum JobStatus {
+  INTERESTED
+  TO_APPLY
+  APPLIED
+  ASSESSMENT
+  INTERVIEW
+  OFFER
+  REJECTED
+  ACCEPTED
+}
+
+enum MBASection {
+  PROFILE
+  CAT
+  ENTRANCE
+  RESEARCH
+  INTERVIEW
+}
+
+enum MBAActivityType {
+  BUSINESS_READING
+  GENERAL_AWARENESS
+  COMMUNICATION
+  LEADERSHIP
+  ACHIEVEMENT_DOC
+  CAT_PRACTICE
+  EXAM_RESEARCH
+  SCHOOL_RESEARCH
+  INTERVIEW_PREP
+  OTHER
+}
+
+enum CreativeNoteKind {
+  CHARACTER
+  PLOT
+  SCENE
+  IDEA
+  NOTE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  SAVING
+  INVESTMENT
+}
+
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ACHIEVED
+  PAUSED
+  DROPPED
+}
+
+enum ProgressMode {
+  MILESTONES
+  MANUAL
+}
+
+enum TargetUnit {
+  MINUTES
+  SESSIONS
+}
+
+enum ScheduleVersionKind {
+  RESCHEDULE_DAY
+  WEEKLY_PLAN
+  CONFLICT_RESOLUTION
+  RECOVERY
+  MANUAL
+}
+
+enum ScheduleVersionStatus {
+  PROPOSED
+  APPLIED
+  UNDONE
+  DISCARDED
+}
+
+enum ChangeAction {
+  CREATE
+  MOVE
+  SKIP
+  STATUS
+  UNSCHEDULE
+  RESTORE
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Profile & settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Profile {
+  id                 String  @id @default(cuid())
+  userId             String  @unique
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName        String
+  location           String?
+  education          String?
+  college            String?
+  graduationTarget   String? // YYYY-MM
+  currentRole        String?
+  company            String?
+  currentFocus       String?
+  mbaObjective       String?
+  mbaAdmissionTarget String?
+  creativeAmbition   String?
+  creativeObjective  String?
+  sideProject        String?
+  updatedAt          DateTime @updatedAt
+}
+
+model UserSettings {
+  id                  String         @id @default(cuid())
+  userId              String         @unique
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timezone            String         @default("Asia/Kolkata")
+  currency            String         @default("INR")
+  theme               String         @default("dark")
+  mode                SchedulingMode @default(NORMAL)
+  modeChangedAt       DateTime?
+  /// When the user explicitly dismissed the automatic exam-mode suggestion.
+  examSuggestionDismissedAt DateTime?
+  planningStart       String         @default("2026-11-01")
+  planningEnd         String         @default("2027-12-31")
+  catTargetDate       String         @default("2028-11-26")
+  wakeMinute          Int            @default(420) // 07:00
+  sleepMinute         Int            @default(1380) // 23:00
+  /// Max minutes of scheduled focus work per day (excludes fixed commitments)
+  dailyFocusLimitMin  Int            @default(300)
+  dailyTaskLimit      Int            @default(8)
+  breakMinutes        Int            @default(10)
+  minRestBetweenMin   Int            @default(10)
+  preferEarlierHours  Boolean        @default(true)
+  // Targets (normal mode defaults; mode targets live in WeeklyTarget)
+  aiDailyMin          Int            @default(60)
+  aiWeeklyMin         Int            @default(360)
+  aiMonthlyMin        Int            @default(1440)
+  gymDays             Int[]          @default([1, 2, 4, 5]) // 0=Sun â€¦ 6=Sat
+  gymPreferredStart   Int?
+  gymDurationMin      Int            @default(60)
+  sleepTargetHours    Float          @default(8)
+  waterTargetMl       Int            @default(3000)
+  emergencyFundTarget Decimal?       @db.Decimal(14, 2)
+  monthlySavingsTarget Decimal?      @db.Decimal(14, 2)
+  /// Category weights per mode, e.g. { "ACADEMICS": 20, ... }
+  weightsNormal       Json
+  weightsExam         Json
+  weightsRecovery     Json
+  notificationPrefs   Json
+  onboardedAt         DateTime?
+  /// Personal "why" shown on the dashboard instead of generic quotes
+  personalWhy         String?
+  /// Ordered dashboard panels: [{ "id": "score", "hidden": false }, ...]
+  dashboardLayout     Json?
+  /// Landing page after sign-in: "/dashboard" or "/my-day"
+  startPage           String         @default("/dashboard")
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}
+
+model Category {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key       CategoryKey
+  name      String
+  color     String
+  icon      String
+  priority  Int         @default(5)
+  tasks     Task[]
+  recurring RecurringTask[]
+  targets   WeeklyTarget[]
+  goals     Goal[]
+  events    Event[]
+
+  @@unique([userId, key])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Tasks & scheduling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Task {
+  id                String     @id @default(cuid())
+  userId            String
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  categoryId        String
+  category          Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  priority          Priority   @default(MEDIUM)
+  kind              TaskKind   @default(FLEXIBLE)
+  date              String // YYYY-MM-DD
+  startMinute       Int?
+  durationMin       Int
+  actualMin         Int?
+  status            TaskStatus @default(PENDING)
+  deadline          String?
+  isFlexible        Boolean    @default(true)
+  canSkip           Boolean    @default(false)
+  weeklyTargetId    String?
+  weeklyTarget      WeeklyTarget? @relation(fields: [weeklyTargetId], references: [id], onDelete: SetNull)
+  recurringTaskId   String?
+  recurringTask     RecurringTask? @relation(fields: [recurringTaskId], references: [id], onDelete: SetNull)
+  goalId            String?
+  goal              Goal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  notes             String?
+  completionPct     Int        @default(0)
+  skipReason        String?
+  skipApproved      Boolean    @default(false)
+  completedAt       DateTime?
+  source            TaskSource @default(MANUAL)
+  /// Prevents duplicate generation, e.g. "rec:<recurringId>:<date>"
+  dedupeKey         String?
+  /// Number of times this task has been moved automatically
+  rescheduleCount   Int        @default(0)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  completions       TaskCompletion[]
+  changes           ScheduleChange[]
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, date])
+  @@index([userId, status])
+  @@index([categoryId])
+}
+
+/// Immutable history of every status change on a task.
+model TaskCompletion {
+  id            String     @id @default(cuid())
+  taskId        String
+  task          Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status        TaskStatus
+  completionPct Int        @default(0)
+  actualMin     Int?
+  note          String?
+  date          String // task date at the time of the change
+  at            DateTime   @default(now())
+
+  @@index([userId, at])
+  @@index([taskId])
+}
+
+model RecurringTask {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  categoryId     String
+  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  priority       Priority  @default(MEDIUM)
+  kind           TaskKind  @default(RECURRING)
+  durationMin    Int
+  daysOfWeek     Int[] // 0=Sun â€¦ 6=Sat
+  preferredStart Int?
+  startDate      String
+  endDate        String?
+  /// Modes in which this recurring task is generated
+  modes          SchedulingMode[] @default([NORMAL])
+  canSkip        Boolean   @default(false)
+  weeklyTargetId String?
+  weeklyTarget   WeeklyTarget? @relation(fields: [weeklyTargetId], references: [id], onDelete: SetNull)
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  tasks          Task[]
+
+  @@index([userId, active])
+}
+
+model WeeklyTarget {
+  id             String     @id @default(cuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key            String // stable key, e.g. "ai-learning"
+  label          String
+  categoryId     String
+  category       Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  unit           TargetUnit
+  normalTarget   Int
+  examTarget     Int
+  recoveryTarget Int
+  /// Default length of one planned block for this target (minutes)
+  blockMin       Int        @default(60)
+  preferredStart Int?
+  /// Whether the planner auto-generates blocks toward this target
+  autoPlan       Boolean    @default(true)
+  /// Optional targets never create backlog when missed
+  optionalInExam Boolean    @default(false)
+  active         Boolean    @default(true)
+  sortOrder      Int        @default(0)
+  tasks          Task[]
+  recurring      RecurringTask[]
+
+  @@unique([userId, key])
+}
+
+model ScheduleVersion {
+  id         String                @id @default(cuid())
+  userId     String
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       ScheduleVersionKind
+  status     ScheduleVersionStatus @default(PROPOSED)
+  summary    String
+  /// Full proposal including warnings â€” the "before/after" snapshot
+  proposal   Json
+  createdAt  DateTime              @default(now())
+  appliedAt  DateTime?
+  undoneAt   DateTime?
+  changes    ScheduleChange[]
+
+  @@index([userId, createdAt])
+}
+
+/// Audit trail of every schedule mutation (manual or automatic).
+model ScheduleChange {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versionId    String?
+  version      ScheduleVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  taskId       String?
+  task         Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  taskTitle    String
+  action       ChangeAction
+  fromDate     String?
+  fromStart    Int?
+  toDate       String?
+  toStart      Int?
+  fromStatus   TaskStatus?
+  toStatus     TaskStatus?
+  reason       String?
+  automatic    Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@index([versionId])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Calendar & university â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Event {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  type          EventType
+  categoryId    String?
+  category      Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  date          String
+  endDate       String?
+  startMinute   Int?
+  endMinute     Int?
+  allDay        Boolean    @default(false)
+  /// Whether this event blocks schedulable time
+  blocksTime    Boolean    @default(true)
+  location      String?
+  notes         String?
+  subjectId     String?
+  subject       UniversitySubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  applicationId String?
+  application   JobApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  /// MANUAL | GOOGLE_CALENDAR | GMAIL
+  source        String     @default("MANUAL")
+  externalId    String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([userId, source, externalId])
+  @@index([userId, date])
+}
+
+model UniversitySubject {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  code      String?
+  semester  String?
+  credits   Int?
+  notes     String?
+  progress  Int             @default(0)
+  slots     TimetableSlot[]
+  events    Event[]
+  createdAt DateTime        @default(now())
+
+  @@index([userId])
+}
+
+model TimetableSlot {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int // 0=Sun â€¦ 6=Sat
+  startMinute Int
+  endMinute   Int
+  title       String
+  kind        TimetableKind @default(LECTURE)
+  subjectId   String?
+  subject     UniversitySubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  location    String?
+  notes       String?
+  validFrom   String?
+  validTo     String?
+  createdAt   DateTime      @default(now())
+
+  @@index([userId, dayOfWeek])
+}
+
+/// Internship / work availability blocks (weekly recurring).
+model WorkBlock {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+  label       String   @default("Internship")
+  remote      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, dayOfWeek])
+}
+
+model ExamPeriod {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  startDate String
+  endDate   String
+  /// Days before start when exam mode is suggested
+  leadDays  Int      @default(10)
+  notes     String?
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, startDate])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Trackers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model LearningSession {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date           String
+  status         LearningStatus @default(RUNNING)
+  startedAt      DateTime
+  endedAt        DateTime?
+  lastResumedAt  DateTime?
+  /// Seconds of active (non-paused) time accumulated before lastResumedAt
+  accumulatedSec Int            @default(0)
+  durationMin    Int            @default(0)
+  topic          String?
+  notes          String?
+  manual         Boolean        @default(false)
+  taskId         String?
+  createdAt      DateTime       @default(now())
+
+  @@index([userId, date])
+}
+
+model GymSession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        String
+  type        GymType  @default(STRENGTH)
+  durationMin Int
+  focus       String?
+  exercises   String?
+  notes       String?
+  taskId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model HealthLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date       String
+  weightKg   Float?
+  sleepHours Float?
+  waterMl    Int?
+  steps      Int?
+  walked     Boolean  @default(false)
+  notes      String?
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, date])
+}
+
+model JobApplication {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   String
+  role      String
+  status    JobStatus @default(INTERESTED)
+  appliedOn String?
+  salary    String?
+  location  String?
+  url       String?
+  source    String?
+  nextStep  String?
+  notes     String?
+  events    Event[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId, status])
+}
+
+model NetworkingLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String
+  person    String
+  company   String?
+  channel   String?
+  notes     String?
+  followUp  String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model ProfessionalAchievement {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String
+  title     String
+  kind      String   @default("INTERNSHIP") // INTERNSHIP, PROJECT, CERTIFICATION, RESUME, LINKEDIN, OTHER
+  impact    String?
+  notes     String?
+  taskId    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model MBAActivity {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        String
+  section     MBASection      @default(PROFILE)
+  type        MBAActivityType
+  title       String
+  durationMin Int             @default(0)
+  notes       String?
+  taskId      String?
+  createdAt   DateTime        @default(now())
+
+  @@index([userId, date])
+}
+
+model CreativeProject {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  logline     String?
+  synopsis    String?
+  status      String            @default("ACTIVE") // ACTIVE, PAUSED, DONE
+  wordGoal    Int?
+  notes       CreativeNote[]
+  milestones  CreativeMilestone[]
+  sessions    CreativeSession[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([userId])
+}
+
+model CreativeNote {
+  id        String           @id @default(cuid())
+  projectId String
+  project   CreativeProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  kind      CreativeNoteKind
+  title     String
+  body      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([projectId, kind])
+}
+
+model CreativeMilestone {
+  id        String          @id @default(cuid())
+  projectId String
+  project   CreativeProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int             @default(0)
+  doneAt    DateTime?
+
+  @@index([projectId])
+}
+
+model CreativeSession {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     CreativeProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  date        String
+  durationMin Int
+  wordCount   Int             @default(0)
+  notes       String?
+  taskId      String?
+  createdAt   DateTime        @default(now())
+
+  @@index([userId, date])
+}
+
+model FinancialTransaction {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String
+  type      TransactionType
+  category  String
+  amount    Decimal         @db.Decimal(14, 2)
+  note      String?
+  createdAt DateTime        @default(now())
+
+  @@index([userId, date])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Personal development â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String
+  mood      Int?
+  body      String
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model ReadingItem {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  author     String?
+  kind       String   @default("BOOK")
+  status     String   @default("READING") // TO_READ, READING, DONE
+  startedOn  String?
+  finishedOn String?
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model SideProjectLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        String
+  durationMin Int
+  notes       String?
+  taskId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Goals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model Goal {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  categoryId     String?
+  category       Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  startDate      String
+  targetDate     String
+  priority       Priority     @default(MEDIUM)
+  status         GoalStatus   @default(NOT_STARTED)
+  progressMode   ProgressMode @default(MILESTONES)
+  manualProgress Int          @default(0)
+  sortOrder      Int          @default(0)
+  milestones     Milestone[]
+  tasks          Task[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([userId])
+}
+
+model Milestone {
+  id         String    @id @default(cuid())
+  goalId     String
+  goal       Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title      String
+  targetDate String?
+  order      Int       @default(0)
+  doneAt     DateTime?
+
+  @@index([goalId])
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Reviews, scores, gamification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+model DailyScore {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String
+  score     Float
+  mode      SchedulingMode
+  /// Weights snapshot used for this day â€” never recomputed from current settings
+  weights   Json
+  breakdown Json
+  tasksDone Int            @default(0)
+  tasksTotal Int           @default(0)
+  updatedAt DateTime       @updatedAt
+
+  @@unique([userId, date])
+}
+
+model WeeklyReview {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart  String
+  data       Json
+  reflection String?
+  improvements String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, weekStart])
+}
+
+model MonthlyReview {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month      String // YYYY-MM
+  data       Json
+  reflection String?
+  challenges String?
+  lessons    String?
+  priorities String?
+  completedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, month])
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  key         String            @unique
+  title       String
+  description String
+  icon        String
+  xp          Int
+  earned      UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  href      String?
+  dedupeKey String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt])
+}
+
+// ───────────────────────────── Personalization ─────────────────────────────
+
+/// A kind of day (College day, Internship day, Weekend, Exam day) with its own rhythm.
+model DayTemplate {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  color         String        @default("#FACC15")
+  /// Default days of week (0=Sun … 6=Sat). A weekday maps to at most one template.
+  daysOfWeek    Int[]         @default([])
+  wakeMinute    Int
+  sleepMinute   Int
+  focusLimitMin Int
+  taskLimit     Int
+  /// Rest day: only essentials (fixed, high-priority, deadline-bound) are planned
+  restDay       Boolean       @default(false)
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  overrides     DayOverride[]
+
+  @@index([userId])
+}
+
+/// Use a specific template on a specific date (e.g. "Exam day" on 25 Nov).
+model DayOverride {
+  id         String      @id @default(cuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date       String
+  templateId String
+  template   DayTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+/// Personal time the scheduler never touches (family dinner, commute, prayer, no-screens hour).
+model ProtectedBlock {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label       String
+  daysOfWeek  Int[]
+  startMinute Int
+  endMinute   Int
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// PREFER: place this category's work inside the window when possible.
+/// AVOID: never auto-schedule this category inside the window.
+model EnergyWindow {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// null = applies to all categories
+  categoryKey CategoryKey?
+  /// PREFER | AVOID
+  kind        String
+  daysOfWeek  Int[]
+  startMinute Int
+  endMinute   Int
+  label       String?
+  createdAt   DateTime     @default(now())
+
+  @@index([userId])
+}
+
+model Habit {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  icon       String     @default("Check")
+  color      String     @default("#22C55E")
+  /// Days the habit is expected (0=Sun … 6=Sat)
+  daysOfWeek Int[]      @default([0, 1, 2, 3, 4, 5, 6])
+  active     Boolean    @default(true)
+  sortOrder  Int        @default(0)
+  createdAt  DateTime   @default(now())
+  logs       HabitLog[]
+
+  @@index([userId, active])
+}
+
+model HabitLog {
+  id      String   @id @default(cuid())
+  habitId String
+  habit   Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date    String
+  at      DateTime @default(now())
+
+  @@unique([habitId, date])
+  @@index([userId, date])
+}
+
+// ───────────────────────────── Integrations ─────────────────────────────
+// OAuth tokens live in Better Auth's `account` table (linked Google / GitHub accounts).
+
+/// Per-provider sync state and preferences.
+model Integration {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// GOOGLE_CALENDAR | GMAIL | GITHUB | CHATGPT | CLAUDE
+  provider     String
+  enabled      Boolean   @default(true)
+  settings     Json?
+  lastSyncedAt DateTime?
+  lastError    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([userId, provider])
+}
+
+/// A Gmail message classified as relevant (interview, assessment, offer, deadline…).
+/// Only headers + Gmail's short snippet are stored — never the full body.
+model EmailInsight {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gmailId       String
+  threadId      String?
+  fromAddress   String
+  subject       String
+  snippet       String?
+  receivedAt    DateTime
+  /// INTERVIEW | ASSESSMENT | OFFER | REJECTION | APPLICATION | COLLEGE | DEADLINE
+  kind          String
+  /// Company guessed from the sender
+  company       String?
+  /// Date mentioned in the email, if one could be parsed (YYYY-MM-DD)
+  suggestedDate String?
+  /// NEW | ACCEPTED | DISMISSED
+  status        String   @default("NEW")
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, gmailId])
+  @@index([userId, status])
+}
+
+/// Daily GitHub contribution counts.
+model GithubActivity {
+  id      String   @id @default(cuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date    String
+  commits Int      @default(0)
+  prs     Int      @default(0)
+  reviews Int      @default(0)
+  issues  Int      @default(0)
+  repos   String[] @default([])
+
+  @@unique([userId, date])
+}
+
+/// Daily AI-assistant usage imported from ChatGPT / Claude data exports.
+model AiChatActivity {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// CHATGPT | CLAUDE
+  provider      String
+  date          String
+  conversations Int      @default(0)
+  messages      Int      @default(0)
+  /// Conversation titles (topics) for that day
+  titles        String[] @default([])
+
+  @@unique([userId, provider, date])
+}
