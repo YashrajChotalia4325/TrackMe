@@ -8,8 +8,9 @@ export default function Loading() {
     <div className="space-y-6" role="status" aria-busy="true" aria-live="polite">
       <span className="sr-only">Loading…</span>
       <div aria-hidden className="space-y-2.5">
-        <Skeleton className="h-3 w-32 rounded-[4px] bg-muted motion-reduce:animate-none" />
-        <Skeleton className="h-9 w-72 max-w-full rounded-[6px] bg-muted motion-reduce:animate-none" />
+        {/* Eyebrow line: a plain muted bar. Title: an ink-bordered block like the tiles below. */}
+        <Skeleton className="h-3 w-32 rounded-[4px] border-0 bg-muted motion-reduce:animate-none" />
+        <Skeleton className="h-10 w-72 max-w-full rounded-[8px] border-2 border-ink bg-muted motion-reduce:animate-none" />
       </div>
       <div aria-hidden className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (

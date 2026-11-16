@@ -10,7 +10,7 @@ export function ExportButtons() {
   return (
     <>
       <Button variant="outline" onClick={() => window.print()} className="print:hidden">
-        <Printer className="size-4" /> Print / PDF
+        <Printer className="size-4" aria-hidden /> Print / PDF
       </Button>
       <Button
         variant="outline"
@@ -30,7 +30,7 @@ export function ExportButtons() {
           })
         }
       >
-        <Download className="size-4" /> Export data
+        <Download className="size-4" aria-hidden /> Export data
       </Button>
     </>
   );

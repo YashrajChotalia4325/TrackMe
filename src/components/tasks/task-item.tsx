@@ -22,7 +22,7 @@ import { formatDuration, formatMinute, formatDate } from "@/lib/time";
 import { KIND_META } from "@/lib/domain/constants";
 import type { TaskView } from "@/server/queries";
 import { cn } from "@/lib/utils";
-import { CategoryChip, DANGER_FILL, FOCUS_RING, ON_BLOCK } from "./category-style";
+import { CategoryChip, DANGER_FILL, FOCUS_RING, ON_BLOCK, REVEAL_ON_HOVER } from "./category-style";
 
 const PRIORITY_TONE: Record<string, string> = {
   CRITICAL: "text-destructive",
@@ -74,8 +74,8 @@ export function TaskItem({ task, onEdit, compact = false, showDate = false }: { 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <p className={cn("truncate text-sm font-semibold", inactive && "text-muted-foreground line-through decoration-2 decoration-muted-foreground/60")}>{task.title}</p>
-          {task.kind === "FIXED" && <Pin className="size-3.5 text-foreground" aria-label="Fixed commitment" />}
-          {task.recurringTaskId && <Repeat className="size-3.5 text-foreground" aria-label="Recurring" />}
+          {task.kind === "FIXED" && <Pin className="size-3.5 text-foreground" role="img" aria-label="Fixed commitment" />}
+          {task.recurringTaskId && <Repeat className="size-3.5 text-foreground" role="img" aria-label="Recurring" />}
           {missed && <span className={cn("rounded-[6px] border-2 border-ink px-1.5 text-[10px] leading-4 font-semibold tracking-[0.04em] uppercase", DANGER_FILL, ON_BLOCK)}>Missed</span>}
           {skipped && <span className="rounded-[6px] border-2 border-ink bg-card px-1.5 text-[10px] leading-4 font-semibold text-muted-foreground">Skipped{task.skipApproved ? " · no penalty" : ""}</span>}
           {task.status === "IN_PROGRESS" && <span className={cn("rounded-[6px] border-2 border-ink bg-block-sun px-1.5 text-[10px] leading-4 font-semibold tracking-[0.04em] uppercase", ON_BLOCK)}>In progress</span>}
@@ -102,13 +102,14 @@ export function TaskItem({ task, onEdit, compact = false, showDate = false }: { 
               type="button"
               aria-label={`Actions for ${task.title}`}
               className={cn(
-                "grid size-8 shrink-0 place-items-center rounded-[8px] border-2 border-transparent text-foreground opacity-100 transition hover:border-ink hover:bg-muted sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 data-[popup-open]:border-ink data-[popup-open]:bg-muted data-[popup-open]:opacity-100",
+                "grid size-8 shrink-0 place-items-center rounded-[8px] border-2 border-transparent text-foreground transition hover:border-ink hover:bg-muted data-[popup-open]:border-ink data-[popup-open]:bg-muted data-[popup-open]:opacity-100",
+                REVEAL_ON_HOVER,
                 FOCUS_RING,
               )}
             />
           }
         >
-          <MoreHorizontal className="size-4" />
+          <MoreHorizontal className="size-4" aria-hidden />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           {task.categoryKey === "AI" && !inactive && (

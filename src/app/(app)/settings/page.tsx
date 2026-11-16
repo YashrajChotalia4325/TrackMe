@@ -9,10 +9,14 @@ import { RhythmTab } from "@/components/settings/rhythm-tab";
 import { PersonalizeTab } from "@/components/settings/personalize-tab";
 import { formatDate, formatMinute } from "@/lib/time";
 import type { CategoryKeyT, ModeT } from "@/lib/domain/constants";
+import { cn } from "@/lib/utils";
+import { chip, divide, num, tabsList, tabsTrigger } from "@/components/config/bold";
 
 export const metadata = { title: "Settings" };
 
 const ACTION_LABEL: Record<string, string> = { CREATE: "Created", MOVE: "Moved", SKIP: "Skipped", STATUS: "Status", UNSCHEDULE: "Unscheduled", RESTORE: "Restored" };
+/** Block colour per audit action (ink text on every fill). */
+const ACTION_BLOCK: Record<string, string> = { CREATE: "bg-block-lime", MOVE: "bg-block-sky", SKIP: "bg-block-sun", STATUS: "bg-block-violet", UNSCHEDULE: "bg-block-stone", RESTORE: "bg-block-teal" };
 
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
   const sp = await searchParams;
@@ -35,16 +39,16 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
     <div className="space-y-6">
       <PageHeader title="Settings" description="Change any target or preference — no rebuild needed." actions={<ExportButtons />} />
       <Tabs defaultValue={initialTab}>
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="schedule">Schedule</TabsTrigger>
-          <TabsTrigger value="rhythm">Day rhythm</TabsTrigger>
-          <TabsTrigger value="personalize">Personalize</TabsTrigger>
-          <TabsTrigger value="targets">Targets</TabsTrigger>
-          <TabsTrigger value="scoring">Scoring</TabsTrigger>
-          <TabsTrigger value="commitments">Commitments</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+        <TabsList aria-label="Settings sections" className={tabsList}>
+          <TabsTrigger value="schedule" className={tabsTrigger}>Schedule</TabsTrigger>
+          <TabsTrigger value="rhythm" className={tabsTrigger}>Day rhythm</TabsTrigger>
+          <TabsTrigger value="personalize" className={tabsTrigger}>Personalize</TabsTrigger>
+          <TabsTrigger value="targets" className={tabsTrigger}>Targets</TabsTrigger>
+          <TabsTrigger value="scoring" className={tabsTrigger}>Scoring</TabsTrigger>
+          <TabsTrigger value="commitments" className={tabsTrigger}>Commitments</TabsTrigger>
+          <TabsTrigger value="profile" className={tabsTrigger}>Profile</TabsTrigger>
+          <TabsTrigger value="notifications" className={tabsTrigger}>Notifications</TabsTrigger>
+          <TabsTrigger value="history" className={tabsTrigger}>History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="schedule" className="mt-4">
@@ -143,7 +147,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
             {versions.length === 0 ? (
               <p className="text-sm text-muted-foreground">No automatic changes applied yet.</p>
             ) : (
-              <ul className="divide-y divide-border">
+              <ul className={divide}>
                 {versions.map((v) => (
                   <li key={v.id} className="flex items-center gap-3 py-2.5 text-sm">
                     <span className="min-w-0 flex-1">
@@ -152,21 +156,21 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
                         {v.summary} · {v.createdAt.toLocaleString("en-IN", { timeZone: ctx.tz, dateStyle: "medium", timeStyle: "short" })}
                       </span>
                     </span>
-                    {v.status === "APPLIED" ? <UndoVersionButton id={v.id} /> : <span className="text-xs text-muted-foreground">Undone</span>}
+                    {v.status === "APPLIED" ? <UndoVersionButton id={v.id} /> : <span className={cn(chip, "bg-block-stone")}>Undone</span>}
                   </li>
                 ))}
               </ul>
             )}
           </Panel>
           <Panel title="Audit trail" description="Every schedule change, manual or automatic">
-            <ul className="divide-y divide-border text-sm">
+            <ul className={cn(divide, "text-sm")}>
               {changes.length === 0 && <li className="py-2 text-muted-foreground">No changes recorded yet.</li>}
               {changes.map((c) => (
                 <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 py-2">
-                  <span className="w-24 shrink-0 text-xs text-muted-foreground">{c.createdAt.toLocaleString("en-IN", { timeZone: ctx.tz, day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</span>
-                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium">{ACTION_LABEL[c.action]}</span>
+                  <span className={cn(num, "w-28 shrink-0 text-xs text-muted-foreground")}>{c.createdAt.toLocaleString("en-IN", { timeZone: ctx.tz, day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</span>
+                  <span className={cn(chip, ACTION_BLOCK[c.action] ?? "bg-block-stone")}>{ACTION_LABEL[c.action] ?? c.action}</span>
                   <span className="min-w-0 flex-1 truncate font-medium">{c.taskTitle}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className={cn(num, "text-xs text-muted-foreground")}>
                     {c.fromDate && `${formatDate(c.fromDate, "dm")}${c.fromStart != null ? ` ${formatMinute(c.fromStart)}` : ""}`}
                     {c.fromDate && c.toDate && " → "}
                     {c.toDate && `${formatDate(c.toDate, "dm")}${c.toStart != null ? ` ${formatMinute(c.toStart)}` : ""}`}

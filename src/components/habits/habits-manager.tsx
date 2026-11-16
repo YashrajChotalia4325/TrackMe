@@ -14,7 +14,7 @@ import { ALL_DAYS, DEFAULT_HABIT_COLOR, DEFAULT_HABIT_ICON, FLAME_AT, HABIT_COLO
 import { formatDate } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { divide, focusRing, num, subCard } from "@/components/config/bold";
-import { HabitBadge, HabitIcon } from "./habit-icon";
+import { HabitBadge, HabitIcon, habitFill } from "./habit-icon";
 
 type Editing = { mode: "new" } | { mode: "edit"; habit: HabitOverview } | null;
 
@@ -58,7 +58,7 @@ export function HabitsManager({ habits, today }: { habits: HabitOverview[]; toda
               ›
             </span>
           </summary>
-          <ul className={cn(divide, "border-t-2 border-foreground/10 px-4 pb-2")}>
+          <ul className={cn(divide, "border-t-2 border-border px-4 pb-2")}>
             {archived.map((h) => (
               <ArchivedRow key={h.id} habit={h} onDelete={() => setDeleting(h)} />
             ))}
@@ -90,7 +90,7 @@ function HabitRow({ habit: h, today, first, last, onEdit, onDelete }: { habit: H
             aria-label={`${h.name} done today`}
             disabled={pending}
             onClick={() => run(() => toggleHabit(h.id, today, !h.doneToday), { success: false })}
-            className={cn("press rounded-lg shadow-brutal-sm disabled:opacity-70", focusRing)}
+            className={cn("press rounded-[8px] shadow-brutal-sm disabled:opacity-70", focusRing)}
             title={h.doneToday ? "Done today — click to undo" : "Tick for today"}
           >
             <HabitBadge icon={h.icon} color={h.color} filled={h.doneToday} />
@@ -112,7 +112,7 @@ function HabitRow({ habit: h, today, first, last, onEdit, onDelete }: { habit: H
               title={`${formatDate(d.date, "weekday")}${d.expected ? (d.done ? " · done" : d.date === today ? " · not yet" : " · not ticked") : d.done ? " · done (bonus)" : d.beforeStart ? " · before this habit started" : " · rest day"}`}
               className={cn(
                 "size-3 rounded-[2px] border border-border sm:size-3.5",
-                d.done ? (d.expected ? "bg-block-lime" : "bg-block-lime/50") : d.expected ? "bg-background" : "border-border/30 bg-muted",
+                d.done ? "bg-block-lime" : d.expected ? "bg-background" : "bg-muted",
                 d.date === today && "outline-2 outline-offset-1 outline-foreground",
               )}
             />
@@ -170,7 +170,7 @@ function ArchivedRow({ habit: h, onDelete }: { habit: HabitOverview; onDelete: (
   const { run, pending } = useAction();
   return (
     <li className="flex items-center gap-3 py-2">
-      <HabitBadge icon={h.icon} color={h.color} className="opacity-60" />
+      <HabitBadge icon={h.icon} color={h.color} className="bg-muted text-muted-foreground" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm text-muted-foreground">{h.name}</p>
         <p className="text-xs text-muted-foreground">
@@ -248,7 +248,7 @@ function HabitDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
                     aria-label={iconLabel(icon)}
                     title={iconLabel(icon)}
                     onClick={() => setV({ ...v, icon })}
-                    className={cn("grid h-9 place-items-center rounded-md border-2 transition-colors", focusRing, on ? "border-border bg-primary text-primary-foreground shadow-brutal-sm" : "border-border/30 text-muted-foreground hover:border-border hover:text-foreground")}
+                    className={cn("grid h-9 place-items-center rounded-md border-2 transition-colors", focusRing, on ? "border-border bg-primary text-primary-foreground shadow-brutal-sm" : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground")}
                   >
                     <HabitIcon name={icon} />
                   </button>
@@ -271,8 +271,8 @@ function HabitDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
                     aria-label={c.label}
                     title={c.label}
                     onClick={() => setV({ ...v, color: c.value })}
-                    className={cn("grid size-8 place-items-center rounded-md border-2 border-border text-ink transition-transform", focusRing, on ? "shadow-brutal-sm" : "hover:-translate-y-px")}
-                    style={{ background: c.value }}
+                    className={cn("on-block grid size-8 place-items-center rounded-md border-2 border-border transition-transform motion-reduce:transition-none", focusRing, on ? "shadow-brutal-sm" : "motion-safe:hover:-translate-y-px")}
+                    style={{ background: habitFill(c.value) }}
                   >
                     {on && <Check className="size-4" strokeWidth={3} aria-hidden />}
                   </button>

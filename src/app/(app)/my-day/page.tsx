@@ -16,6 +16,7 @@ import { urgency } from "@/lib/domain/scheduler";
 import { toSchedTask } from "@/server/schedule-context";
 import { habitsForDate } from "@/server/habits";
 import { HabitChecklist } from "@/components/habits/habit-checklist";
+import { SEGMENT } from "@/components/tasks/category-style";
 
 export const metadata = { title: "My Day" };
 
@@ -55,7 +56,7 @@ export default async function MyDayPage({ searchParams }: PageProps<"/my-day">) 
         description={`${done}/${data.tasks.length} done · ${formatDuration(planned)} planned${score ? ` · score ${Math.round(score.score)}/100` : ""}`}
         actions={
           <>
-            <div className="flex items-center rounded-lg border border-border">
+            <div className={SEGMENT}>
               <Button variant="ghost" size="icon" aria-label="Previous day" nativeButton={false} render={<Link href={`/my-day?date=${addDays(date, -1)}`} />}>
                 <ChevronLeft className="size-4" />
               </Button>
@@ -80,20 +81,20 @@ export default async function MyDayPage({ searchParams }: PageProps<"/my-day">) 
             <Panel title="Fixed commitments" description="Protected — the scheduler never moves these">
               <ul className="space-y-1.5">
                 {data.events.map((e) => (
-                  <li key={e.id} className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm">
-                    <Lock className="size-3.5 text-muted-foreground" aria-hidden />
-                    <span className="tabular w-36 shrink-0 text-xs text-muted-foreground">{e.allDay || e.startMinute == null ? "All day" : `${formatMinute(e.startMinute)} – ${formatMinute(e.endMinute)}`}</span>
-                    <span className="min-w-0 flex-1 truncate font-medium">{e.title}</span>
-                    <span className="hidden text-xs text-muted-foreground sm:inline">{EVENT_TYPE_META[e.type]?.label}</span>
+                  <li key={e.id} className="flex items-center gap-3 rounded-[8px] border-2 border-ink bg-muted px-3 py-2 text-sm">
+                    <Lock className="size-3.5 shrink-0 text-foreground" aria-hidden />
+                    <span className="w-36 shrink-0 font-mono text-xs font-medium text-muted-foreground tabular-nums">{e.allDay || e.startMinute == null ? "All day" : `${formatMinute(e.startMinute)} – ${formatMinute(e.endMinute)}`}</span>
+                    <span className="min-w-0 flex-1 truncate font-semibold">{e.title}</span>
+                    <span className="hidden rounded-[6px] border-2 border-ink bg-card px-1.5 py-px text-[11px] leading-4 font-semibold sm:inline">{EVENT_TYPE_META[e.type]?.label}</span>
                   </li>
                 ))}
                 {blocks.map((b, i) => (
-                  <li key={i} className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm">
-                    <Lock className="size-3.5 text-muted-foreground" aria-hidden />
-                    <span className="tabular w-36 shrink-0 text-xs text-muted-foreground">
+                  <li key={i} className="flex items-center gap-3 rounded-[8px] border-2 border-ink bg-muted px-3 py-2 text-sm">
+                    <Lock className="size-3.5 shrink-0 text-foreground" aria-hidden />
+                    <span className="w-36 shrink-0 font-mono text-xs font-medium text-muted-foreground tabular-nums">
                       {formatMinute(b.start)} – {formatMinute(b.end)}
                     </span>
-                    <span className="min-w-0 flex-1 truncate font-medium">{b.label}</span>
+                    <span className="min-w-0 flex-1 truncate font-semibold">{b.label}</span>
                   </li>
                 ))}
               </ul>
@@ -109,7 +110,7 @@ export default async function MyDayPage({ searchParams }: PageProps<"/my-day">) 
             title="Habits"
             description={date <= ctx.today ? "Encouragement, not a score" : undefined}
             action={
-              <Link href="/personal#habits" aria-label="Manage habits" className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+              <Link href="/personal#habits" aria-label="Manage habits" className="rounded-[4px] text-xs font-semibold text-foreground underline decoration-ink/30 decoration-2 underline-offset-4 hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
                 Manage
               </Link>
             }

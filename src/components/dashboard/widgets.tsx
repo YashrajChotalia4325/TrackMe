@@ -46,8 +46,17 @@ export function ScoreCard({
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="flex items-baseline gap-1.5 font-display leading-none font-extrabold">
-            <span className="text-[64px] tracking-[-0.045em] tabular-nums sm:text-[76px]">{score ?? "—"}</span>
-            <span className="text-2xl tracking-[-0.02em] text-[#111111]/65 sm:text-[28px]">/100</span>
+            {score != null ? (
+              <span className="text-[56px] tracking-[-0.03em] tabular-nums min-[400px]:text-[64px]">{score}</span>
+            ) : (
+              <>
+                <span aria-hidden className="text-[56px] tracking-[-0.03em] min-[400px]:text-[64px]">
+                  —
+                </span>
+                <span className="sr-only">No score yet</span>
+              </>
+            )}
+            <span className="text-2xl tracking-[-0.02em] text-[#111111]/70 sm:text-[28px]">/100</span>
           </p>
           {score != null && (
             <p className="mt-3">
@@ -56,7 +65,7 @@ export function ScoreCard({
           )}
         </div>
         <div className="shrink-0 max-[359px]:hidden">
-          <CircularProgress value={s} size={104} strokeWidth={16} shape="square" ariaLabel={`Today's score ${s} out of 100`} className="stroke-white" progressClassName="stroke-[#111111]" />
+          <CircularProgress value={s} size={104} strokeWidth={16} shape="square" ariaLabel={score != null ? `Today's score ${s} out of 100` : "No score yet today"} className="stroke-white" progressClassName="stroke-[#111111]" />
         </div>
       </div>
 
@@ -142,8 +151,11 @@ export function WeekScoreChart({ days, today }: { days: { date: string; score: n
 /** Chunky block button: flat colour fill, ink border, hard shadow, lift on hover / sink on press. */
 const actionBase = cn(
   "press h-auto min-h-[5.5rem] flex-col items-start justify-between gap-3 rounded-[8px] border-2 border-ink p-3 text-left text-sm font-semibold leading-tight whitespace-normal text-[#111111] shadow-brutal",
-  "hover:text-[#111111] dark:border-ink dark:text-[#111111] dark:hover:text-[#111111] [&_svg]:size-5",
+  "hover:text-[#111111] dark:text-[#111111] dark:hover:text-[#111111] [&_svg:not([class*='size-'])]:size-5",
   focusRing,
+  // The button is itself a block (which resets --ink to #111111 in dark mode), so its outline,
+  // drawn on the surrounding card, uses the theme ring colour to stay visible in both themes.
+  "focus-visible:outline-ring",
 );
 const actionTone = {
   lime: "bg-block-lime hover:bg-block-lime dark:bg-block-lime dark:hover:bg-block-lime aria-expanded:bg-block-lime",
@@ -202,7 +214,8 @@ export function ExamSuggestionBanner({ name, daysUntil }: { name: string; daysUn
         </p>
         <p className="mt-1 text-[13px] leading-relaxed text-[#111111]/80">Examination mode prioritises preparation, trims optional work and keeps fitness. You can switch back any time.</p>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      {/* Literal ink shadows inside the sun block, so they hold in the dark theme too. */}
+      <div className="flex shrink-0 items-center gap-2 [--shadow-ink:#111111]">
         <Button disabled={pending} onClick={() => run(() => setMode("EXAM"))} className={cn("border-2 border-[#111111] bg-block-lime text-[#111111] shadow-brutal-sm press hover:bg-block-lime", focusRing)}>
           Switch to Exam mode
         </Button>
@@ -212,7 +225,7 @@ export function ExamSuggestionBanner({ name, daysUntil }: { name: string; daysUn
           disabled={pending}
           onClick={() => run(() => dismissExamSuggestion(), { success: false })}
           aria-label="Dismiss suggestion"
-          className={cn("rounded-[8px] border-2 border-transparent text-[#111111] hover:border-[#111111] hover:bg-white/60 hover:text-[#111111] dark:hover:bg-white/60", focusRing)}
+          className={cn("rounded-[8px] border-2 border-transparent text-[#111111] hover:border-[#111111] hover:bg-white hover:text-[#111111] dark:hover:bg-white", focusRing)}
         >
           <X className="size-4" aria-hidden />
         </Button>

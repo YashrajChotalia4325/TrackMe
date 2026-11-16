@@ -9,6 +9,7 @@ import { AddEventButton } from "@/components/calendar/event-form-dialog";
 import { Button } from "@/components/ui/button";
 import { addDays, addMonths, datesBetween, formatDate, formatMonth, isISODate, monthKey, monthRange, weekStart } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { FOCUS_RING, SEGMENT } from "@/components/tasks/category-style";
 
 export const metadata = { title: "Calendar" };
 
@@ -19,13 +20,13 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const anchor = typeof sp.date === "string" && isISODate(sp.date) ? sp.date : ctx.today;
 
   const tabs = (
-    <div className="flex rounded-lg border border-border p-0.5" role="tablist" aria-label="Calendar view">
+    <nav className={SEGMENT} aria-label="Calendar view">
       {(["month", "week"] as const).map((v) => (
-        <Link key={v} role="tab" aria-selected={view === v} href={`/calendar?view=${v}&date=${anchor}`} className={cn("rounded-md px-3 py-1 text-sm capitalize", view === v ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")}>
+        <Link key={v} href={`/calendar?view=${v}&date=${anchor}`} aria-current={view === v ? "page" : undefined} className={cn("rounded-[6px] border-2 px-3 py-1 text-sm font-semibold capitalize transition-colors", FOCUS_RING, view === v ? "border-ink bg-block-lime text-ink" : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground")}>
           {v}
         </Link>
       ))}
-    </div>
+    </nav>
   );
 
   if (view === "week") {
@@ -100,7 +101,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
 
 function Nav({ prev, next, today }: { prev: string; next: string; today: string }) {
   return (
-    <div className="flex items-center rounded-lg border border-border">
+    <div className={SEGMENT}>
       <Button variant="ghost" size="icon" aria-label="Previous" nativeButton={false} render={<Link href={prev} />}>
         <ChevronLeft className="size-4" />
       </Button>

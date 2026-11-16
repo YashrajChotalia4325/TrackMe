@@ -11,7 +11,7 @@ import { deleteLearning, discardLearning, logLearning, pauseLearning, resumeLear
 import { elapsedSeconds, formatClock, useNow, type ActiveTimer } from "@/components/shell/learning-timer-pill";
 import { formatDate, formatDuration } from "@/lib/time";
 import { cn } from "@/lib/utils";
-import { divide, num, reveal, rowIconBtn } from "@/components/config/bold";
+import { chip, divide, num, reveal, rowIconBtn } from "@/components/config/bold";
 
 /** Chunky timer controls. */
 const BIG = "h-12 gap-2 px-6 text-base font-semibold [&_svg:not([class*='size-'])]:size-5";
@@ -59,26 +59,26 @@ export function LearningTimer({ timer, linkedTaskTitle }: { timer: ActiveTimer |
       <div className="flex flex-wrap justify-center gap-3">
         {!timer && (
           <Button size="lg" className={BIG} disabled={pending} onClick={() => run(() => startLearning({ topic }))}>
-            <Play className="size-4" /> Start
+            <Play className="size-4" aria-hidden /> Start
           </Button>
         )}
         {timer && running && (
           <Button size="lg" variant="outline" className={cn(BIG, "bg-block-sun text-ink hover:bg-block-sun")} disabled={pending} onClick={() => run(() => pauseLearning(timer.id), { success: false })}>
-            <Pause className="size-4" /> Pause
+            <Pause className="size-4" aria-hidden /> Pause
           </Button>
         )}
         {timer && !running && (
           <Button size="lg" className={BIG} disabled={pending} onClick={() => run(() => resumeLearning(timer.id), { success: false })}>
-            <Play className="size-4" /> Resume
+            <Play className="size-4" aria-hidden /> Resume
           </Button>
         )}
         {timer && (
           <>
             <Button size="lg" variant="outline" className={BIG} disabled={pending} onClick={() => run(() => stopLearning(timer.id, { topic, notes }), { onSuccess: () => setNotes("") })}>
-              <Square className="size-4" /> Stop & log
+              <Square className="size-4" aria-hidden /> Stop & log
             </Button>
             <Button size="lg" variant="ghost" className="h-12 w-12 px-0" disabled={pending} onClick={() => run(() => discardLearning(timer.id))} aria-label="Discard timer" title="Discard timer">
-              <X className="size-4" />
+              <X className="size-4" aria-hidden />
             </Button>
           </>
         )}
@@ -133,10 +133,10 @@ export function SessionList({ sessions }: { sessions: { id: string; date: string
           </span>
           <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
             {formatDate(s.date, "weekday")}
-            {s.manual && <span className="rounded-[5px] border border-border/40 px-1 py-px text-[10px] font-semibold tracking-[0.06em] uppercase">manual</span>}
+            {s.manual && <span className={cn(chip, "bg-block-stone text-[10px] tracking-[0.06em] uppercase")}>manual</span>}
           </span>
           <button type="button" disabled={pending} onClick={() => run(() => deleteLearning(s.id))} className={cn(rowIconBtn, reveal)} aria-label="Delete session">
-            <Trash2 className="size-3.5" />
+            <Trash2 className="size-3.5" aria-hidden />
           </button>
         </li>
       ))}

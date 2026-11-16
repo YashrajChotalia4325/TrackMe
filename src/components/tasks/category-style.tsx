@@ -21,10 +21,19 @@ export const CATEGORY_BLOCK: Record<string, string> = {
 export const ON_BLOCK = "text-ink";
 
 /** Visible keyboard focus for custom controls: 2px ink outline, 2px offset. */
-export const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+export const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
-/** Danger fill for "missed" style badges (ink text on soft red). */
-export const DANGER_FILL = "bg-[#FF8A8A]";
+/** Danger fill for "missed" style badges (ink text on soft red). Uses the block
+ *  token so the dark theme keeps #111111 text on it. */
+export const DANGER_FILL = "bg-block-danger";
+
+/** Ink text for hover-only block fills (hover:bg-block-*): text-ink turns cream
+ *  in the dark theme unless the bg-block-* class itself is present. */
+export const ON_BLOCK_HOVER = "hover:text-[#111111]";
+
+/** Row controls that only appear on hover for mouse users; always visible on
+ *  touch screens and whenever they (or their row) hold keyboard focus. */
+export const REVEAL_ON_HOVER = "opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100";
 
 const HEX_TO_KEY: Record<string, string> = Object.fromEntries(Object.entries(CATEGORY_META).map(([k, m]) => [m.color.toUpperCase(), k]));
 
@@ -33,6 +42,14 @@ export function categoryBlock(key?: string | null, color?: string | null): strin
   const fromHex = color ? HEX_TO_KEY[color.toUpperCase()] : undefined;
   return (fromHex && CATEGORY_BLOCK[fromHex]) || "bg-block-stone";
 }
+
+/** CSS colour value of a category's block fill, for inline styles such as progress bars. */
+export function categoryBlockVar(key?: string | null, color?: string | null): string {
+  return `var(--${categoryBlock(key, color).replace("bg-", "")})`;
+}
+
+/** Ink-bordered segmented container for prev / today / next navigation groups. */
+export const SEGMENT = "flex items-center gap-0.5 rounded-[8px] border-2 border-ink bg-card p-0.5 shadow-brutal-sm";
 
 /** Small square colour chip (ink-bordered) — the category marker on rows and cards. */
 export function CategorySwatch({ categoryKey, color, className }: { categoryKey?: string | null; color?: string | null; className?: string }) {

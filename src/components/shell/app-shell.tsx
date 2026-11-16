@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { LogOut, Moon, PanelLeft, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
@@ -75,7 +75,8 @@ export function AppShell({
   return (
     <AnimatedSidebarProvider open={open} onOpenChange={onOpenChange}>
       <AnimatedSidebar ariaLabel="TrackMe navigation" collapsible="icon">
-        <AnimatedSidebarHeader className="border-b-2 border-ink px-3 py-4">
+        {/* 64px tall, so its ink rule lines up with the top bar's bottom rule. */}
+        <AnimatedSidebarHeader className="h-16 justify-center border-b-2 border-ink px-3 py-0">
           <SidebarBrand />
         </AnimatedSidebarHeader>
 
@@ -172,9 +173,14 @@ function SidebarBrand() {
   );
 }
 
+const noopSubscribe = () => () => {};
+
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const dark = resolvedTheme !== "light";
+  // The server can't know the stored theme, so render the default (light) state until
+  // hydrated; otherwise the label and icon mismatch between server and client.
+  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false);
+  const dark = hydrated && resolvedTheme === "dark";
   return (
     <Tooltip>
       <TooltipTrigger

@@ -7,6 +7,9 @@ import { Heatmap } from "@/components/charts/charts";
 import { GithubConnectButton, GithubSyncControls } from "./github-controls";
 import { contributionStreak, sumRange, topRepos } from "@/lib/domain/github";
 import { addDays, datesBetween, formatDate, formatMinute, monthKey, monthRange, nowIn, weekStart } from "@/lib/time";
+import { cn } from "@/lib/utils";
+import { chip, divide, eyebrow, inset, num } from "@/components/config/bold";
+import { Code, Note, ProviderCard, SetupStepList } from "./provider-card";
 
 const CONTEXT_NOTE = "Shown for context only. GitHub contributions are never counted as learning time or towards your score, and nothing is logged automatically.";
 // With only the read:user scope GitHub's events feed returns public events, while the contribution count can include private work.
@@ -24,31 +27,20 @@ function SetupSteps() {
       On GitHub open <strong>Settings → Developer settings → OAuth Apps → New OAuth App</strong>.
     </>,
     <>
-      Set <strong>Homepage URL</strong> to <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">http://localhost:3000</code>.
+      Set <strong>Homepage URL</strong> to <Code>http://localhost:3000</Code>.
     </>,
     <>
-      Set <strong>Authorization callback URL</strong> to{" "}
-      <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs break-all">http://localhost:3000/api/auth/callback/github</code>.
+      Set <strong>Authorization callback URL</strong> to <Code wrap>http://localhost:3000/api/auth/callback/github</Code>.
     </>,
     <>Register the app, then click &ldquo;Generate a new client secret&rdquo;.</>,
     <>
-      Add <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">GITHUB_CLIENT_ID</code> and{" "}
-      <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">GITHUB_CLIENT_SECRET</code> to your <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.env</code> file.
+      Add <Code>GITHUB_CLIENT_ID</Code> and <Code>GITHUB_CLIENT_SECRET</Code> to your <Code>.env</Code> file.
     </>,
     <>Restart TrackMe, then come back here and click Connect GitHub.</>,
   ];
   return (
     <div className="space-y-4">
-      <ol className="space-y-2.5 text-sm">
-        {steps.map((s, i) => (
-          <li key={i} className="flex gap-3">
-            <span className="tabular grid size-5 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-medium text-muted-foreground" aria-hidden>
-              {i + 1}
-            </span>
-            <span className="min-w-0 text-muted-foreground">{s}</span>
-          </li>
-        ))}
-      </ol>
+      <SetupStepList steps={steps} />
       <PrivateTip />
     </div>
   );
@@ -56,12 +48,9 @@ function SetupSteps() {
 
 function PrivateTip() {
   return (
-    <p className="flex gap-2 rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
-      <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-      <span>
-        Tip: turn on <strong>Include private contributions on my profile</strong> in your GitHub profile settings so work in private repos is counted.
-      </span>
-    </p>
+    <Note icon={Info}>
+      Tip: turn on <strong className="font-semibold">Include private contributions on my profile</strong> in your GitHub profile settings so work in private repos is counted.
+    </Note>
   );
 }
 
@@ -73,65 +62,66 @@ export async function GithubIntegration() {
 
   if (!status.configured) {
     return (
-      <Panel title="GitHub" description={description}>
-        <p className="mb-4 text-sm">GitHub isn&apos;t set up yet. It takes about two minutes:</p>
+      <ProviderCard id="github" block="bg-block-stone" icon={GitBranch} title="GitHub" description={description} status="not-set-up">
+        <p className="mb-4 text-sm font-semibold">GitHub isn&apos;t set up yet. It takes about two minutes:</p>
         <SetupSteps />
-      </Panel>
+      </ProviderCard>
     );
   }
 
   if (!status.linked) {
     return (
-      <Panel title="GitHub" description={description}>
+      <ProviderCard id="github" block="bg-block-stone" icon={GitBranch} title="GitHub" description={description} status="not-connected">
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Connect your GitHub account to see your contribution calendar next to your AI &amp; Technology learning. TrackMe only asks for <code className="font-mono text-xs">read:user</code> and
-            never writes to GitHub.
+            Connect your GitHub account to see your contribution calendar next to your AI &amp; Technology learning. TrackMe only asks for <Code>read:user</Code> and never writes to GitHub.
           </p>
           <GithubConnectButton />
           <PrivateTip />
         </div>
-      </Panel>
+      </ProviderCard>
     );
   }
 
   const count = await db.githubActivity.count({ where: { userId: ctx.userId } });
   // 401s and "denied access" ask the user to reconnect; offer it right here instead of making them disconnect (which deletes data).
   const needsReconnect = Boolean(status.lastError && /reconnect/i.test(status.lastError));
-  const badge = needsReconnect ? (
-    <span className="rounded-full bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning">Needs reconnecting</span>
-  ) : (
-    <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">Connected</span>
-  );
   return (
-    <Panel title="GitHub" description={description} action={badge}>
+    <ProviderCard
+      id="github"
+      block="bg-block-stone"
+      icon={GitBranch}
+      title="GitHub"
+      description={description}
+      status={needsReconnect ? "error" : "connected"}
+      statusLabel={needsReconnect ? "Needs reconnecting" : undefined}
+    >
       <div className="space-y-4">
-        <dl className="grid gap-3 text-sm sm:grid-cols-3">
+        <dl className={cn(inset, "grid gap-3 p-3 text-sm sm:grid-cols-3")}>
           <div className="min-w-0">
-            <dt className="text-xs text-muted-foreground">Account</dt>
-            <dd className="truncate font-medium">{status.login ? `@${status.login}` : "Linked"}</dd>
+            <dt className={eyebrow}>Account</dt>
+            <dd className="mt-1 truncate font-semibold">{status.login ? `@${status.login}` : "Linked"}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Last synced</dt>
-            <dd className="font-medium">{status.lastSuccessAt ? formatSynced(status.lastSuccessAt, ctx.tz, ctx.today) : "Not yet"}</dd>
+            <dt className={eyebrow}>Last synced</dt>
+            <dd className="mt-1 font-semibold">{status.lastSuccessAt ? formatSynced(status.lastSuccessAt, ctx.tz, ctx.today) : "Not yet"}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Days with activity stored</dt>
-            <dd className="tabular font-medium">{count}</dd>
+            <dt className={eyebrow}>Days with activity stored</dt>
+            <dd className={cn(num, "mt-1 text-base")}>{count}</dd>
           </div>
         </dl>
         {status.lastError && (
-          <p role="status" className="flex gap-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
-            <CircleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-            <span>{status.lastError}</span>
-          </p>
+          <Note icon={CircleAlert} tone={needsReconnect ? "error" : "warn"} role="status">
+            {status.lastError}
+          </Note>
         )}
         <p className="text-xs text-muted-foreground">
           Syncs automatically about once an hour. {PUBLIC_NOTE} {CONTEXT_NOTE}
         </p>
         <GithubSyncControls login={status.login} needsReconnect={needsReconnect} />
       </div>
-    </Panel>
+    </ProviderCard>
   );
 }
 
@@ -167,9 +157,13 @@ export async function GithubPanel() {
     <Panel
       title="GitHub activity"
       description={status.login ? `@${status.login} on GitHub` : "From your linked GitHub account"}
-      action={status.lastError ? <span title={status.lastError} className="inline-flex">
-            <CircleAlert role="img" className="size-4 text-warning" aria-label={`GitHub sync issue: ${status.lastError}`} />
-          </span> : undefined}
+      action={
+        status.lastError ? (
+          <span title={status.lastError} className={cn(chip, "bg-block-danger")}>
+            <CircleAlert role="img" className="size-3" aria-label={`GitHub sync issue: ${status.lastError}`} /> Sync issue
+          </span>
+        ) : undefined
+      }
     >
       <div className="space-y-5">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -180,25 +174,25 @@ export async function GithubPanel() {
         </div>
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
           <div className="min-w-0">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">
-              Contributions, last 18 weeks <span className="tabular">({total18} total)</span>
+            <p className={cn(eyebrow, "mb-2")}>
+              Contributions, last 18 weeks <span className={cn(num, "tracking-normal normal-case")}>({total18} total)</span>
             </p>
             <Heatmap days={heat} unit="contributions" label={`GitHub contributions per day over the last 18 weeks, ${total18} in total`} />
           </div>
           <div className="min-w-0">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">Top repos this month</p>
+            <p className={cn(eyebrow, "mb-2")}>Top repos this month</p>
             {repos.length === 0 ? (
               <p className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Sparkles className="size-3.5" aria-hidden /> No repo activity yet this month.
               </p>
             ) : (
-              <ul className="space-y-1.5">
+              <ul className={divide}>
                 {repos.map((r) => (
-                  <li key={r.name} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="min-w-0 truncate" title={r.name}>
+                  <li key={r.name} className="flex items-center justify-between gap-2 py-1.5 text-sm">
+                    <span className="min-w-0 truncate font-medium" title={r.name}>
                       {r.name}
                     </span>
-                    <span className="tabular shrink-0 text-xs text-muted-foreground">
+                    <span className={cn(num, "shrink-0 text-xs text-muted-foreground")}>
                       {r.days} {r.days === 1 ? "day" : "days"}
                     </span>
                   </li>

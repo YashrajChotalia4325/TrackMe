@@ -10,6 +10,8 @@ import { inr } from "@/lib/format";
 import { addDays, datesBetween, formatDate, formatDuration, formatMonth, monthKey } from "@/lib/time";
 import { CATEGORY_META, type CategoryKeyT } from "@/lib/domain/constants";
 import { cn } from "@/lib/utils";
+import { BLOCK, display, divide, eyebrow, num, segItem, segList } from "@/components/config/bold";
+import { CategorySwatch } from "@/components/tasks/category-style";
 
 export const metadata = { title: "Analytics" };
 
@@ -23,9 +25,9 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Analytics" title="How you spend your time" description="All charts are calculated from your actual logged activity." actions={<ExportButtons />} />
-      <nav className="flex w-fit rounded-lg border border-border p-0.5 print:hidden" aria-label="Report period">
+      <nav className={cn(segList, "print:hidden")} aria-label="Report period">
         {TABS.map((t) => (
-          <Link key={t} href={`/analytics?tab=${t}`} aria-current={tab === t ? "page" : undefined} className={cn("rounded-md px-3 py-1 text-sm capitalize", tab === t ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")}>
+          <Link key={t} href={`/analytics?tab=${t}`} aria-current={tab === t ? "page" : undefined} className={segItem(tab === t)}>
             {t === "yearly" ? "2027 report" : t}
           </Link>
         ))}
@@ -74,11 +76,11 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
             <TrendArea data={series} dataKey="score" domain={[0, 100]} ariaLabel="Daily score over the last 30 days" emptyText="Scores appear as you complete tasks" />
           </Panel>
           <Panel title="Today's time by category">
-            <Donut data={[...timeByCat.entries()].map(([k, v]) => ({ name: CATEGORY_META[k as CategoryKeyT].name, value: v, color: CATEGORY_META[k as CategoryKeyT].color }))} unit=" min" ariaLabel="Time spent by category today" />
+            <Donut data={[...timeByCat.entries()].map(([k, v]) => ({ name: CATEGORY_META[k as CategoryKeyT].name, value: v, color: CATEGORY_META[k as CategoryKeyT]?.color ?? BLOCK.stone }))} unit=" min" ariaLabel="Time spent by category today" />
           </Panel>
         </div>
         <Panel title="Completed vs missed" description="Last 30 days">
-          <Bars data={series} keys={[{ key: "completed", label: "Completed", color: "var(--chart-2)" }, { key: "missed", label: "Missed", color: "var(--destructive)" }]} stacked ariaLabel="Completed and missed tasks per day" />
+          <Bars data={series} keys={[{ key: "completed", label: "Completed", color: BLOCK.lime }, { key: "missed", label: "Missed", color: BLOCK.danger }]} stacked ariaLabel="Completed and missed tasks per day" />
         </Panel>
       </div>
     );
@@ -114,10 +116,10 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
         </div>
         <div className="grid gap-6 lg:grid-cols-2">
           <Panel title="Score & completion trend" description="Last 8 weeks">
-            <Lines data={weeks} keys={[{ key: "avg", label: "Avg score", color: "var(--chart-1)" }, { key: "completion", label: "Completion %", color: "var(--chart-2)" }]} domain={[0, 100]} ariaLabel="Weekly average score and completion rate" />
+            <Lines data={weeks} keys={[{ key: "avg", label: "Avg score", color: BLOCK.violet }, { key: "completion", label: "Completion %", color: BLOCK.orange }]} domain={[0, 100]} ariaLabel="Weekly average score and completion rate" />
           </Panel>
           <Panel title="Learning & gym" description="Last 8 weeks">
-            <Bars data={weeks} keys={[{ key: "learning", label: "Learning hours", color: "var(--chart-3)" }, { key: "gym", label: "Gym sessions", color: "var(--chart-2)" }]} ariaLabel="Weekly learning hours and gym sessions" />
+            <Bars data={weeks} keys={[{ key: "learning", label: "Learning hours", color: BLOCK.violet }, { key: "gym", label: "Gym sessions", color: BLOCK.lime }]} ariaLabel="Weekly learning hours and gym sessions" />
           </Panel>
         </div>
         <CategoryTable stats={r.categoryStats} />
@@ -131,7 +133,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
     const year = await yearReport(ctx, Number(month.slice(0, 4)));
     return (
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold">{formatMonth(month)}</h2>
+        <h2 className={cn(display, "text-xl")}>{formatMonth(month)}</h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat label="Average score" value={r.avgScore ?? "—"} hint={r.grade ?? undefined} icon={Target} tone="accent" />
           <Stat label="Tasks completed" value={r.tasksCompleted} hint={r.completionRate != null ? `${Math.round(r.completionRate * 100)}% completion` : undefined} icon={CheckCircle2} />
@@ -147,7 +149,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
             <TrendArea data={year.monthly.map((m) => ({ label: formatMonth(m.month).slice(0, 3), avg: m.avgScore }))} dataKey="avg" domain={[0, 100]} ariaLabel="Average score per month" />
           </Panel>
           <Panel title="Productivity" description="Completed tasks and learning hours per month">
-            <Bars data={year.monthly.map((m) => ({ label: formatMonth(m.month).slice(0, 3), tasks: m.tasks, learning: m.learningHours }))} keys={[{ key: "tasks", label: "Tasks", color: "var(--chart-1)" }, { key: "learning", label: "Learning h", color: "var(--chart-3)" }]} ariaLabel="Tasks and learning per month" />
+            <Bars data={year.monthly.map((m) => ({ label: formatMonth(m.month).slice(0, 3), tasks: m.tasks, learning: m.learningHours }))} keys={[{ key: "tasks", label: "Tasks", color: BLOCK.sky }, { key: "learning", label: "Learning h", color: BLOCK.violet }]} ariaLabel="Tasks and learning per month" />
           </Panel>
         </div>
         <CategoryTable stats={r.categoryStats} />
@@ -175,7 +177,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/analyt
         </Panel>
         <div className="grid gap-6 lg:grid-cols-2">
           <Panel title="Learning & gym by month">
-            <Bars data={y.monthly.map((m) => ({ label: formatMonth(m.month).slice(0, 3), learning: m.learningHours, gym: m.gym }))} keys={[{ key: "learning", label: "Learning h", color: "var(--chart-3)" }, { key: "gym", label: "Gym", color: "var(--chart-2)" }]} ariaLabel="2027 learning hours and gym sessions by month" emptyText="2027 hasn't started yet" />
+            <Bars data={y.monthly.map((m) => ({ label: formatMonth(m.month).slice(0, 3), learning: m.learningHours, gym: m.gym }))} keys={[{ key: "learning", label: "Learning h", color: BLOCK.violet }, { key: "gym", label: "Gym", color: BLOCK.lime }]} ariaLabel="2027 learning hours and gym sessions by month" emptyText="2027 hasn't started yet" />
           </Panel>
           <Panel title="Average score by month">
             <TrendArea data={y.monthly.map((m) => ({ label: formatMonth(m.month).slice(0, 3), avg: m.avgScore }))} dataKey="avg" domain={[0, 100]} ariaLabel="2027 average score by month" emptyText="2027 hasn't started yet" />
@@ -191,28 +193,28 @@ function CategoryTable({ stats }: { stats: { key: string; name: string; color: s
     <Panel title="Category performance">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs text-muted-foreground">
-            <tr>
-              <th className="py-2 font-medium">Category</th>
-              <th className="py-2 font-medium">Completed</th>
-              <th className="py-2 font-medium">Rate</th>
-              <th className="py-2 text-right font-medium">Time</th>
+          <thead className="text-left">
+            <tr className="border-b-2 border-border">
+              <th scope="col" className={cn(eyebrow, "py-2 pr-3")}>Category</th>
+              <th scope="col" className={cn(eyebrow, "py-2 pr-3")}>Completed</th>
+              <th scope="col" className={cn(eyebrow, "py-2 pr-3")}>Rate</th>
+              <th scope="col" className={cn(eyebrow, "py-2 text-right")}>Time</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={divide}>
             {stats.map((c) => (
-              <tr key={c.key} className="border-t border-border">
-                <td className="py-2">
+              <tr key={c.key}>
+                <th scope="row" className="py-2.5 pr-3 text-left font-semibold">
                   <span className="flex items-center gap-2">
-                    <span className="size-2 rounded-full" style={{ background: c.color }} />
+                    <CategorySwatch categoryKey={c.key} color={c.color} />
                     {c.name}
                   </span>
-                </td>
-                <td className="tabular py-2">
+                </th>
+                <td className={cn(num, "py-2.5 pr-3")}>
                   {c.done}/{c.total}
                 </td>
-                <td className="tabular py-2">{c.rate != null ? `${Math.round(c.rate * 100)}%` : "—"}</td>
-                <td className="tabular py-2 text-right">{formatDuration(c.minutes)}</td>
+                <td className={cn(num, "py-2.5 pr-3")}>{c.rate != null ? `${Math.round(c.rate * 100)}%` : "—"}</td>
+                <td className={cn(num, "py-2.5 text-right")}>{formatDuration(c.minutes)}</td>
               </tr>
             ))}
           </tbody>

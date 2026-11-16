@@ -125,7 +125,7 @@ export function ProposalDialog({ value, onClose, onApplied }: { value: OpenPropo
                       const off = excluded.has(i);
                       const Icon = c.action === "CREATE" ? CalendarPlus : c.action === "SKIP" ? SkipForward : RefreshCcw;
                       return (
-                        <li key={i} className={cn("grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-b-2 border-ink px-3 py-3 text-sm last:border-0 sm:grid-cols-[auto_1fr_1fr_auto_1fr] sm:items-center", off && "bg-muted opacity-60")}>
+                        <li key={i} className={cn("grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-b-2 border-ink px-3 py-3 text-sm last:border-0 sm:grid-cols-[auto_1fr_1fr_auto_1fr] sm:items-center", off && "bg-muted")}>
                           <Checkbox
                             checked={!off}
                             onCheckedChange={(v) =>
@@ -142,7 +142,8 @@ export function ProposalDialog({ value, onClose, onApplied }: { value: OpenPropo
                             <p className="flex items-center gap-1.5 truncate font-semibold">
                               <Icon className="size-3.5 shrink-0 text-foreground" aria-hidden />
                               <CategorySwatch categoryKey={c.categoryKey} color={CATEGORY_META[c.categoryKey]?.color} />
-                              <span className="truncate">{c.title}</span>
+                              <span className={cn("truncate", off && "text-muted-foreground line-through decoration-2")}>{c.title}</span>
+                              {off && <span className="sr-only"> (excluded)</span>}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
                               <span className="font-mono font-medium tabular-nums">{formatDuration(c.durationMin)}</span> · {c.reason}
@@ -156,7 +157,7 @@ export function ProposalDialog({ value, onClose, onApplied }: { value: OpenPropo
                           <span
                             className={cn(
                               "col-start-2 inline-flex max-w-full justify-self-start rounded-[6px] border-2 border-ink px-1.5 py-0.5 font-mono text-xs font-medium tabular-nums sm:col-start-auto",
-                              c.action === "SKIP" ? "bg-muted text-muted-foreground" : cn("bg-block-lime", ON_BLOCK),
+                              off ? "border-dashed bg-card text-muted-foreground" : c.action === "SKIP" ? "bg-muted text-muted-foreground" : cn("bg-block-lime", ON_BLOCK),
                             )}
                           >
                             <span className="sr-only">After: </span>

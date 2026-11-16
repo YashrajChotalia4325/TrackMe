@@ -1,8 +1,11 @@
 import "server-only";
-import { Bot, Info, ShieldCheck } from "lucide-react";
+import { Bot, Info, MessagesSquare, ShieldCheck } from "lucide-react";
 import { getContext } from "@/server/context";
 import { db } from "@/server/db";
 import { Panel } from "@/components/common/ui";
+import { cn } from "@/lib/utils";
+import { BLOCK, display, eyebrow, focusRing, subCard } from "@/components/config/bold";
+import { Note, ProviderCard, SetupStepList, StatusChip } from "./provider-card";
 import { Bars } from "@/components/charts/charts";
 import { AiDeleteButton, AiImportButton } from "./ai-import-uploader";
 import { AI_PROVIDERS, AI_PROVIDER_META, type AiProvider } from "@/lib/domain/ai-export-parser";
@@ -12,6 +15,10 @@ const EXPORT_STEPS: Record<AiProvider, string[]> = {
   CHATGPT: ["In ChatGPT, open Settings → Data controls → Export data.", "Open the download link ChatGPT emails you.", "Unzip the archive and pick conversations.json."],
   CLAUDE: ["In Claude, open Settings → Privacy → Export data.", "Open the download link Claude emails you.", "Unzip the archive and pick conversations.json."],
 };
+
+/** Distinct block colours per assistant for charts and legends (both cards share the violet strip). */
+const PROVIDER_FILL: Record<AiProvider, string> = { CHATGPT: BLOCK.teal, CLAUDE: BLOCK.orange };
+const PROVIDER_BLOCK: Record<AiProvider, string> = { CHATGPT: "bg-block-teal", CLAUDE: "bg-block-orange" };
 
 function formatImportedAt(d: Date, tz: string) {
   const { date } = nowIn(tz, d);
@@ -34,18 +41,17 @@ export async function AiImportIntegration() {
   ]);
 
   return (
-    <Panel
+    <ProviderCard
       id="ai-import"
+      block="bg-block-violet"
+      icon={MessagesSquare}
       title="ChatGPT & Claude"
       description="Neither offers an API for your own chat history, so import the official data export instead."
     >
-      <p className="mb-4 flex gap-2 rounded-xl border border-success/30 bg-success/10 p-3 text-sm">
-        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
-        <span>
-          <span className="font-medium">Parsed on your device.</span>{" "}
-          <span className="text-muted-foreground">Your conversations never leave the browser — only daily counts and conversation titles are saved. You can delete them any time.</span>
-        </span>
-      </p>
+      <Note icon={ShieldCheck} tone="safe" className="mb-4 text-sm">
+        <span className="font-semibold">Parsed on your device.</span>{" "}
+        <span className="text-muted-foreground">Your conversations never leave the browser — only daily counts and conversation titles are saved. You can delete them any time.</span>
+      </Note>
       <div className="grid gap-4 md:grid-cols-2">
         {AI_PROVIDERS.map((provider) => {
           const meta = AI_PROVIDER_META[provider];
@@ -54,36 +60,39 @@ export async function AiImportIntegration() {
           const days = t?._count._all ?? 0;
           const hasData = days > 0;
           return (
-            <article key={provider} className="flex flex-col rounded-xl border border-border p-4" aria-labelledby={`ai-${provider}-title`}>
-              <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-lg bg-muted" aria-hidden>
-                  <Bot className="size-4" style={{ color: meta.color }} />
-                </span>
-                <div className="min-w-0">
-                  <h3 id={`ai-${provider}-title`} className="text-sm font-semibold">
-                    {meta.label}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {state?.lastSyncedAt ? `Last imported ${formatImportedAt(state.lastSyncedAt, ctx.tz)}` : "Not imported yet"}
-                  </p>
+            <article key={provider} className={cn(subCard, "flex flex-col p-4")} aria-labelledby={`ai-${provider}-title`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className={cn("grid size-9 shrink-0 place-items-center rounded-[8px] border-2 border-border text-ink", PROVIDER_BLOCK[provider])} aria-hidden>
+                    <Bot className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 id={`ai-${provider}-title`} className="font-display text-base leading-tight font-extrabold tracking-[-0.01em]">
+                      {meta.label}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {state?.lastSyncedAt ? `Last imported ${formatImportedAt(state.lastSyncedAt, ctx.tz)}` : "Not imported yet"}
+                    </p>
+                  </div>
                 </div>
+                <StatusChip status={hasData ? "connected" : "not-set-up"} label={hasData ? "Imported" : "Not set up"} />
               </div>
 
               {hasData ? (
                 <div className="mt-4">
                   <dl className="grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-muted/50 px-2 py-2">
-                      <dt className="text-[11px] text-muted-foreground">Messages</dt>
-                      <dd className="tabular text-base font-semibold">{(t?._sum.messages ?? 0).toLocaleString()}</dd>
-                    </div>
-                    <div className="rounded-lg bg-muted/50 px-2 py-2">
-                      <dt className="text-[11px] text-muted-foreground">Active days</dt>
-                      <dd className="tabular text-base font-semibold">{days.toLocaleString()}</dd>
-                    </div>
-                    <div className="rounded-lg bg-muted/50 px-2 py-2">
-                      <dt className="text-[11px] text-muted-foreground">Per active day</dt>
-                      <dd className="tabular text-base font-semibold">{Math.round((t?._sum.messages ?? 0) / Math.max(1, days))}</dd>
-                    </div>
+                    {(
+                      [
+                        ["Messages", (t?._sum.messages ?? 0).toLocaleString()],
+                        ["Active days", days.toLocaleString()],
+                        ["Per active day", String(Math.round((t?._sum.messages ?? 0) / Math.max(1, days)))],
+                      ] as const
+                    ).map(([k, v]) => (
+                      <div key={k} className="rounded-[8px] border-2 border-border bg-muted px-2 py-2">
+                        <dt className={cn(eyebrow, "text-[10px] tracking-[0.06em]")}>{k}</dt>
+                        <dd className={cn(display, "mt-0.5 text-xl")}>{v}</dd>
+                      </div>
+                    ))}
                   </dl>
                   {t?._min.date && t._max.date && (
                     <p className="mt-2 text-xs text-muted-foreground">
@@ -92,11 +101,7 @@ export async function AiImportIntegration() {
                   )}
                 </div>
               ) : (
-                <ol className="mt-4 list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
-                  {EXPORT_STEPS[provider].map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ol>
+                <SetupStepList steps={EXPORT_STEPS[provider]} className="mt-4 gap-2 text-xs" />
               )}
 
               <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
@@ -105,19 +110,15 @@ export async function AiImportIntegration() {
               </div>
               {hasData && (
                 <details className="mt-3 text-xs text-muted-foreground">
-                  <summary className="cursor-pointer select-none hover:text-foreground">How to get a fresh export</summary>
-                  <ol className="mt-2 list-decimal space-y-1 pl-5">
-                    {EXPORT_STEPS[provider].map((s) => (
-                      <li key={s}>{s}</li>
-                    ))}
-                  </ol>
+                  <summary className={cn("w-fit cursor-pointer rounded-sm font-semibold select-none hover:text-foreground", focusRing)}>How to get a fresh export</summary>
+                  <SetupStepList steps={EXPORT_STEPS[provider]} className="mt-2 gap-2 text-xs" />
                 </details>
               )}
             </article>
           );
         })}
       </div>
-    </Panel>
+    </ProviderCard>
   );
 }
 
@@ -166,7 +167,7 @@ export async function AiUsagePanel() {
         <div>
           <Bars
             data={data}
-            keys={AI_PROVIDERS.map((p) => ({ key: p, label: AI_PROVIDER_META[p].label, color: AI_PROVIDER_META[p].color }))}
+            keys={AI_PROVIDERS.map((p) => ({ key: p, label: AI_PROVIDER_META[p].label, color: PROVIDER_FILL[p] }))}
             stacked
             ariaLabel="Messages sent to ChatGPT and Claude per week for the last 12 weeks"
             emptyText="No imported chats in the last 12 weeks"
@@ -174,7 +175,7 @@ export async function AiUsagePanel() {
           <ul className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground" aria-label="Legend">
             {AI_PROVIDERS.map((p) => (
               <li key={p} className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full" style={{ background: AI_PROVIDER_META[p].color }} aria-hidden />
+                <span className={cn("size-3 rounded-[3px] border-2 border-border", PROVIDER_BLOCK[p])} aria-hidden />
                 {AI_PROVIDER_META[p].label}
               </li>
             ))}
@@ -182,19 +183,19 @@ export async function AiUsagePanel() {
         </div>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl bg-muted/50 p-3">
-              <p className="text-xs text-muted-foreground">Chats this week</p>
-              <p className="tabular mt-1 text-xl font-semibold">{weekChats}</p>
+            <div className="rounded-[10px] border-2 border-border bg-muted p-3">
+              <p className={eyebrow}>Chats this week</p>
+              <p className={cn(display, "mt-1 text-3xl leading-none")}>{weekChats}</p>
             </div>
-            <div className="rounded-xl bg-muted/50 p-3">
-              <p className="text-xs text-muted-foreground">Messages this week</p>
-              <p className="tabular mt-1 text-xl font-semibold">{weekMessages}</p>
+            <div className="rounded-[10px] border-2 border-border bg-muted p-3">
+              <p className={eyebrow}>Messages this week</p>
+              <p className={cn(display, "mt-1 text-3xl leading-none")}>{weekMessages}</p>
             </div>
           </div>
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted-foreground">This week&apos;s topics</p>
+            <p className={cn(eyebrow, "mb-1.5")}>This week&apos;s topics</p>
             {topics.length > 0 ? (
-              <ul className="space-y-1 text-sm">
+              <ul className="space-y-1 text-sm font-medium">
                 {topics.map((t) => (
                   <li key={t} className="truncate" title={t}>
                     {t}

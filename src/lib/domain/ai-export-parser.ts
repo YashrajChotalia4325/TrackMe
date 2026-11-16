@@ -18,8 +18,8 @@ export const AI_PROVIDERS = ["CHATGPT", "CLAUDE"] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 
 export const AI_PROVIDER_META: Record<AiProvider, { label: string; color: string }> = {
-  CHATGPT: { label: "ChatGPT", color: "var(--chart-5)" },
-  CLAUDE: { label: "Claude", color: "#FB923C" },
+  CHATGPT: { label: "ChatGPT", color: "#5EE6C8" },
+  CLAUDE: { label: "Claude", color: "#FF9F43" },
 };
 
 export const MAX_TITLES_PER_DAY = 25;

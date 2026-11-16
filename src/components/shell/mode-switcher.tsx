@@ -40,7 +40,8 @@ export function ModeSwitcher({ mode }: { mode: ModeT }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={8} className="w-72">
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">Scheduling mode</DropdownMenuLabel>
+          {/* DropdownMenuLabel already renders as an eyebrow (11px, 600, uppercase, 0.08em). */}
+          <DropdownMenuLabel>Scheduling mode</DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         {(Object.keys(MODE_META) as ModeT[]).map((m) => {

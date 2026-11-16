@@ -13,6 +13,8 @@ import { formatDays } from "@/lib/domain/rhythm";
 import { CATEGORY_KEYS, CATEGORY_META, type CategoryKeyT } from "@/lib/domain/constants";
 import { formatMinute } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { chip, divide, inset, num, rowIconBtn, subCard } from "@/components/config/bold";
+import { CategorySwatch } from "@/components/tasks/category-style";
 
 export interface EnergyWindowView {
   id: string;
@@ -31,17 +33,17 @@ export function EnergyWindowsManager({ windows }: { windows: EnergyWindowView[] 
   return (
     <div className="space-y-3">
       <dl className="grid gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl bg-muted/40 p-3">
-          <dt className="flex items-center gap-1.5 font-medium text-success">
+        <div className={cn(inset, "p-3")}>
+          <dt className={cn(chip, "bg-block-lime")}>
             <Zap className="size-3.5" aria-hidden /> Prefer
           </dt>
-          <dd className="mt-0.5 text-muted-foreground">Put this work here when possible. If the window is full, it goes elsewhere.</dd>
+          <dd className="mt-1.5 text-muted-foreground">Put this work here when possible. If the window is full, it goes elsewhere.</dd>
         </div>
-        <div className="rounded-xl bg-muted/40 p-3">
-          <dt className="flex items-center gap-1.5 font-medium text-warning">
+        <div className={cn(inset, "p-3")}>
+          <dt className={cn(chip, "bg-block-sun")}>
             <Ban className="size-3.5" aria-hidden /> Avoid
           </dt>
-          <dd className="mt-0.5 text-muted-foreground">Never auto-schedule this work here. You can still place tasks manually.</dd>
+          <dd className="mt-1.5 text-muted-foreground">Never auto-schedule this work here. You can still place tasks manually.</dd>
         </div>
       </dl>
 
@@ -58,7 +60,7 @@ export function EnergyWindowsManager({ windows }: { windows: EnergyWindowView[] 
         />
       ) : (
         <>
-          <ul className="divide-y divide-border rounded-xl border border-border">
+          <ul className={cn(subCard, divide)}>
             {windows.map((w) => {
               const cat = w.categoryKey ? CATEGORY_META[w.categoryKey] : null;
               const what = cat?.name ?? "All work";
@@ -66,36 +68,36 @@ export function EnergyWindowsManager({ windows }: { windows: EnergyWindowView[] 
                 <li key={w.id} className="flex items-center gap-3 px-3 py-2.5">
                   <span
                     className={cn(
-                      "inline-flex w-16 shrink-0 items-center justify-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium",
-                      w.kind === "PREFER" ? "bg-success/15 text-success" : "bg-warning/15 text-warning",
+                      chip,
+                      "w-16 justify-center",
+                      w.kind === "PREFER" ? "bg-block-lime" : "bg-block-sun",
                     )}
                   >
                     {w.kind === "PREFER" ? <Zap className="size-3" aria-hidden /> : <Ban className="size-3" aria-hidden />}
                     {w.kind === "PREFER" ? "Prefer" : "Avoid"}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-1.5 truncate text-sm font-medium">
-                      {cat && <span className="size-2 shrink-0 rounded-full" style={{ background: cat.color }} aria-hidden />}
+                    <p className="flex items-center gap-1.5 truncate text-sm font-semibold">
+                      {cat && w.categoryKey && <CategorySwatch categoryKey={w.categoryKey} color={cat.color} />}
                       {what}
                       {w.label && <span className="truncate font-normal text-muted-foreground">· {w.label}</span>}
                     </p>
-                    <p className="tabular text-xs text-muted-foreground">
+                    <p className={cn(num, "text-xs text-muted-foreground")}>
                       {formatDays(w.daysOfWeek)} · {formatMinute(w.startMinute)} – {formatMinute(w.endMinute)}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon-sm" aria-label={`Edit ${w.kind === "PREFER" ? "prefer" : "avoid"} window for ${what}`} onClick={() => setDialog({ win: w })}>
-                    <Pencil aria-hidden />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
+                  <button type="button" className={cn(rowIconBtn, "hover:bg-block-sky")} aria-label={`Edit ${w.kind === "PREFER" ? "prefer" : "avoid"} window for ${what}`} onClick={() => setDialog({ win: w })}>
+                    <Pencil className="size-3.5" aria-hidden />
+                  </button>
+                  <button
+                    type="button"
                     disabled={pending}
-                    className="hover:text-destructive"
+                    className={rowIconBtn}
                     aria-label={`Remove ${w.kind === "PREFER" ? "prefer" : "avoid"} window for ${what}`}
                     onClick={() => run(() => deleteEnergyWindow(w.id))}
                   >
-                    <Trash2 aria-hidden />
-                  </Button>
+                    <Trash2 className="size-3.5" aria-hidden />
+                  </button>
                 </li>
               );
             })}

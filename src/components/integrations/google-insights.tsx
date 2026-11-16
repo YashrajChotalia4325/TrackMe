@@ -14,17 +14,19 @@ import { INSIGHT_KIND_META } from "@/lib/domain/email-classifier";
 import { formatDate } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { ApplicationOption, InsightView } from "@/server/integrations/google";
+import { chip, divide, inset, num, subCard } from "@/components/config/bold";
 
+/** Flat block fill per insight tone (ink text on every fill). */
 const TONE: Record<string, string> = {
-  accent: "border-primary/30 bg-primary/10 text-primary",
-  success: "border-success/30 bg-success/10 text-success",
-  warning: "border-warning/30 bg-warning/10 text-warning",
-  muted: "border-border bg-muted text-muted-foreground",
+  accent: "bg-block-sky",
+  success: "bg-block-lime",
+  warning: "bg-block-sun",
+  muted: "bg-block-stone",
 };
 
 export function KindBadge({ kind }: { kind: InsightView["kind"] }) {
   const meta = INSIGHT_KIND_META[kind];
-  return <span className={cn("inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[11px] font-medium", TONE[meta.tone])}>{meta.label}</span>;
+  return <span className={cn(chip, TONE[meta.tone] ?? "bg-block-stone")}>{meta.label}</span>;
 }
 
 export function InsightList({ insights, applications, today }: { insights: InsightView[]; applications: ApplicationOption[]; today: string }) {
@@ -34,13 +36,13 @@ export function InsightList({ insights, applications, today }: { insights: Insig
 
   return (
     <>
-      <ul className="divide-y divide-border">
+      <ul className={divide}>
         {insights.map((i) => (
           <li key={i.id} className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-2">
                 <KindBadge kind={i.kind} />
-                <p className="truncate text-sm font-medium" title={i.subject}>
+                <p className="truncate text-sm font-semibold" title={i.subject}>
                   {i.subject}
                 </p>
               </div>
@@ -51,7 +53,7 @@ export function InsightList({ insights, applications, today }: { insights: Insig
                   </span>
                 )}
                 {i.suggestedDate && (
-                  <span className="inline-flex items-center gap-1 text-foreground/80">
+                  <span className={cn(num, "inline-flex items-center gap-1 text-foreground")}>
                     <CalendarDays className="size-3" aria-hidden /> {formatDate(i.suggestedDate, "weekday")}
                   </span>
                 )}
@@ -149,13 +151,16 @@ function AcceptInsightDialog({
           <DialogTitle>Accept suggestion</DialogTitle>
           <DialogDescription className="line-clamp-2">{insight.subject}</DialogDescription>
         </DialogHeader>
-        {insight.snippet && <p className="rounded-xl border border-border bg-muted/30 p-3 text-xs text-muted-foreground">&ldquo;{insight.snippet}&rdquo;</p>}
+        {insight.snippet && <blockquote className={cn(inset, "p-3 text-xs text-muted-foreground")}>&ldquo;{insight.snippet}&rdquo;</blockquote>}
 
         <div className="grid gap-4">
-          <section className="grid gap-3 rounded-xl border border-border p-3">
-            <label className="flex items-center justify-between gap-3 text-sm font-medium">
+          <section className={cn(subCard, "grid gap-3 p-3")}>
+            <label className="flex items-center justify-between gap-3 text-sm font-semibold">
               <span className="inline-flex items-center gap-2">
-                <CalendarDays className="size-4 text-muted-foreground" aria-hidden /> Add to calendar
+                <span className="grid size-6 place-items-center rounded-md border-2 border-border bg-block-sky text-ink" aria-hidden>
+                  <CalendarDays className="size-3.5" />
+                </span>
+                Add to calendar
               </span>
               <Switch checked={addCal} onCheckedChange={setAddCal} aria-label="Add to calendar" />
             </label>
@@ -189,10 +194,13 @@ function AcceptInsightDialog({
           </section>
 
           {canUpdateApp && (
-            <section className="grid gap-3 rounded-xl border border-border p-3">
-              <label className="flex items-center justify-between gap-3 text-sm font-medium">
+            <section className={cn(subCard, "grid gap-3 p-3")}>
+              <label className="flex items-center justify-between gap-3 text-sm font-semibold">
                 <span className="inline-flex items-center gap-2">
-                  <Briefcase className="size-4 text-muted-foreground" aria-hidden /> Update job application
+                  <span className="grid size-6 place-items-center rounded-md border-2 border-border bg-block-sun text-ink" aria-hidden>
+                    <Briefcase className="size-3.5" />
+                  </span>
+                  Update job application
                 </span>
                 <Switch checked={updateApp} onCheckedChange={setUpdateApp} aria-label="Update job application" />
               </label>

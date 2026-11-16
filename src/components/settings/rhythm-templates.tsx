@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Moon, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { CalendarDays, Check, Moon, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -13,6 +13,7 @@ import { createDayTemplate, createSuggestedTemplates, deleteDayTemplate, setDayO
 import { awakeWindowError, findWeekdayClash, formatDays } from "@/lib/domain/rhythm";
 import { DAY_LABELS_LONG, formatDate, formatDuration, formatMinute } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { chip, focusRing, inset, num, rowIconBtn, subCard, templateFill } from "@/components/config/bold";
 
 export interface TemplateView {
   id: string;
@@ -86,35 +87,35 @@ export function TemplatesManager({ templates, overrides, defaults }: { templates
     <>
       <ul className="grid gap-2 sm:grid-cols-2">
         {templates.map((t) => (
-          <li key={t.id} className="flex items-start gap-3 rounded-xl border border-border p-3">
-            <span className="mt-1 size-3 shrink-0 rounded-full" style={{ background: t.color }} aria-hidden />
+          <li key={t.id} className={cn(subCard, "flex items-start gap-3 p-3")}>
+            <span className="mt-0.5 size-4 shrink-0 rounded-[4px] border-2 border-border" style={{ background: templateFill(t.color) }} aria-hidden />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="truncate text-sm font-medium">{t.name}</p>
+                <p className="truncate text-sm font-semibold">{t.name}</p>
                 {t.restDay && (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                  <span className={cn(chip, "bg-block-teal")}>
                     <Moon className="size-3" aria-hidden /> Rest day
                   </span>
                 )}
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">{formatDays(t.daysOfWeek)}</p>
-              <p className="tabular mt-1 text-xs text-muted-foreground">
+              <p className={cn(num, "mt-1 text-xs text-muted-foreground")}>
                 {formatMinute(t.wakeMinute)} – {formatMinute(t.sleepMinute)} · {formatDuration(t.focusLimitMin)} focus · up to {t.taskLimit} task{t.taskLimit === 1 ? "" : "s"}
               </p>
             </div>
             <div className="flex shrink-0 gap-1">
-              <Button variant="ghost" size="icon-sm" aria-label={`Edit ${t.name}`} onClick={() => {
+              <button type="button" className={cn(rowIconBtn, "hover:bg-block-sky")} aria-label={`Edit ${t.name}`} onClick={() => {
                   setEditing(t);
                   setEditOpen(true);
                 }}>
-                <Pencil aria-hidden />
-              </Button>
-              <Button variant="ghost" size="icon-sm" aria-label={`Delete ${t.name}`} onClick={() => {
+                <Pencil className="size-3.5" aria-hidden />
+              </button>
+              <button type="button" className={rowIconBtn} aria-label={`Delete ${t.name}`} onClick={() => {
                   setDeleting(t);
                   setDeleteOpen(true);
-                }} className="hover:text-destructive">
-                <Trash2 aria-hidden />
-              </Button>
+                }}>
+                <Trash2 className="size-3.5" aria-hidden />
+              </button>
             </div>
           </li>
         ))}
@@ -228,9 +229,16 @@ function TemplateDialog({
                   aria-checked={v.color.toLowerCase() === c.toLowerCase()}
                   aria-label={name}
                   onClick={() => setV({ ...v, color: c })}
-                  className={cn("size-7 rounded-full border-2 transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none", v.color.toLowerCase() === c.toLowerCase() ? "scale-110 border-foreground" : "border-transparent")}
-                  style={{ background: c }}
-                />
+                  title={name}
+                  className={cn(
+                    "on-block grid size-8 place-items-center rounded-md border-2 border-border transition-[transform,box-shadow] motion-reduce:transition-none",
+                    focusRing,
+                    v.color.toLowerCase() === c.toLowerCase() ? "shadow-brutal-sm motion-safe:-translate-x-px motion-safe:-translate-y-px" : "",
+                  )}
+                  style={{ background: templateFill(c) }}
+                >
+                  {v.color.toLowerCase() === c.toLowerCase() && <Check className="size-4" strokeWidth={3} aria-hidden />}
+                </button>
               ))}
             </div>
           </Field>
@@ -263,9 +271,9 @@ function TemplateDialog({
           <Field label="Task limit" htmlFor="tpl-tasks">
             <Input id="tpl-tasks" type="number" inputMode="numeric" min={1} max={30} value={v.taskLimit} onChange={(e) => setV({ ...v, taskLimit: Math.round(Number(e.target.value) || 0) })} />
           </Field>
-          <div className="flex items-start justify-between gap-3 rounded-xl border border-border p-3 sm:col-span-2">
+          <div className={cn(inset, "flex items-start justify-between gap-3 p-3 sm:col-span-2")}>
             <div>
-              <label htmlFor="tpl-rest" className="text-sm font-medium">
+              <label htmlFor="tpl-rest" className="text-sm font-semibold">
                 Rest day
               </label>
               <p className="text-xs text-muted-foreground">Only essentials are planned: fixed commitments, high-priority work and anything due within 2 days.</p>
@@ -327,9 +335,9 @@ export function OverrideControl({ templates, overrides, today }: { templates: Te
       ) : (
         <ul className="flex flex-wrap gap-2" aria-label="Upcoming date overrides">
           {overrides.map((o) => (
-            <li key={o.date} className="inline-flex items-center gap-2 rounded-lg border border-border py-1 pr-1 pl-2.5 text-xs">
-              <span className="size-2 rounded-full" style={{ background: o.color }} aria-hidden />
-              <span className="font-medium">{formatDate(o.date, "weekday")}</span>
+            <li key={o.date} className="inline-flex items-center gap-2 rounded-md border-2 border-border bg-card py-1 pr-1 pl-2 text-xs">
+              <span className="size-3 rounded-[3px] border-2 border-border" style={{ background: templateFill(o.color) }} aria-hidden />
+              <span className="font-semibold">{formatDate(o.date, "weekday")}</span>
               <span className="text-muted-foreground">{o.templateName}</span>
               <Button
                 variant="ghost"

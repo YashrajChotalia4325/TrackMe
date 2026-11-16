@@ -57,7 +57,7 @@ export const MODE_BLOCK: Record<ModeT, BlockName> = {
 
 /** Visible 2px ink focus outline with a 2px offset, for custom interactive elements. */
 export const focusRing =
-  "outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-ink";
+  "outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-foreground";
 
 /** Small eyebrow / label text: Geist 600, uppercase, tracked out. */
 export const eyebrow = "text-[11px] font-semibold tracking-[0.08em] uppercase";

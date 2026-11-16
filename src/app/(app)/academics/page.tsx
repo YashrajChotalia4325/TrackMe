@@ -57,7 +57,7 @@ export default async function AcademicsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         <Panel title="Study tasks" description="Next 14 days">
-          {tasks.length === 0 ? <p className="text-sm text-muted-foreground">No study tasks scheduled. In Examination mode the weekly planner adds preparation blocks automatically.</p> : tasks.map((t) => <TaskItem key={t.id} task={toTaskView(t, ctx)} showDate />)}
+          {tasks.length === 0 ? <p className="text-sm text-muted-foreground">No study tasks scheduled. In Examination mode the weekly planner adds preparation blocks automatically.</p> : <div className="space-y-2">{tasks.map((t) => <TaskItem key={t.id} task={toTaskView(t, ctx)} showDate />)}</div>}
         </Panel>
         <Panel title="Upcoming deadlines">
           {deadlines.length === 0 ? (
@@ -65,12 +65,12 @@ export default async function AcademicsPage() {
           ) : (
             <ul className="space-y-2">
               {deadlines.map((e) => (
-                <li key={e.id} className="flex items-center justify-between gap-3 text-sm">
+                <li key={e.id} className="flex items-center justify-between gap-3 rounded-[8px] border-2 border-ink bg-card px-3 py-2 text-sm">
                   <span className="min-w-0">
-                    <span className="block truncate font-medium">{e.title}</span>
+                    <span className="block truncate font-semibold">{e.title}</span>
                     <span className="text-xs text-muted-foreground">{EVENT_TYPE_META[e.type]?.label}</span>
                   </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
+                  <span className="shrink-0 rounded-[6px] border-2 border-ink bg-block-sky px-1.5 py-px font-mono text-[11px] leading-4 font-medium text-ink tabular-nums">
                     {formatDate(e.date, "weekday")}
                     {e.startMinute != null && ` · ${formatMinute(e.startMinute)}`}
                   </span>

@@ -582,10 +582,10 @@ export function AnimatedSidebarMenuButton({
         <motion.span
           layoutId={context.layoutId}
           transition={context.reduce ? { duration: 0 } : SPRING_LAYOUT}
-          // Lime block with an ink rule and a 2px hard shadow. The link clips its overflow (so the
-          // label can fold away when collapsed), so the block stops 2px short of the right and
-          // bottom edges to leave room for its shadow.
-          className="absolute top-0 left-0 right-[2px] bottom-[2px] rounded-[8px] border-2 border-ink bg-primary shadow-brutal-sm"
+          // Lime block with an ink rule and a 2px hard shadow. The link does not clip its overflow
+          // (the label truncates itself), so the block fills the item, its shadow stays visible and
+          // the shared-layout slide between items is not cut off at the link's edges.
+          className="absolute inset-0 rounded-[8px] border-2 border-ink bg-primary shadow-brutal-sm"
         />
       ) : null}
       {icon ? (
@@ -618,7 +618,7 @@ export function AnimatedSidebarMenuButton({
   );
 
   const interactiveClassName = cn(
-    "relative flex h-10 w-full min-w-0 items-center gap-2.5 overflow-hidden rounded-[8px] px-3 text-left text-sm font-medium outline-none",
+    "relative flex h-10 w-full min-w-0 items-center gap-2.5 rounded-[8px] px-3 text-left text-sm font-medium outline-none",
     "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
     "focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-foreground",
     isActive && "font-semibold text-[#111111] hover:bg-transparent hover:text-[#111111]",

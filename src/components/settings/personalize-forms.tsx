@@ -11,6 +11,7 @@ import { WhyQuote } from "@/components/dashboard/why-quote";
 import { resetDashboardLayout, updateDashboardLayout, updatePersonalWhy, updateStartPage } from "@/server/actions/personalize";
 import { isDefaultLayout, moveItem, normalizeLayout, PANEL_BY_ID, PERSONAL_WHY_MAX, type DashboardLayout, type DashboardPanelId, type StartPage } from "@/lib/domain/dashboard-layout";
 import { cn } from "@/lib/utils";
+import { chip, display, divide, eyebrow, num, subCard } from "@/components/config/bold";
 
 const tidy = (v: string) => v.replace(/\s+/g, " ").trim();
 
@@ -69,17 +70,17 @@ export function PersonalWhyForm({ initial, preview }: { initial: string; preview
               Clear
             </Button>
           )}
-          <span id={`${id}-count`} className={cn("tabular ml-auto text-xs", over ? "text-destructive" : "text-muted-foreground")} aria-live="polite">
+          <span id={`${id}-count`} className={cn(num, "ml-auto text-xs", over ? cn(chip, "bg-block-danger") : "text-muted-foreground")} aria-live="polite">
             {clean.length} / {PERSONAL_WHY_MAX}
           </span>
         </div>
       </div>
 
       <div>
-        <p className="mb-2 text-xs font-medium text-muted-foreground">Preview on your dashboard</p>
-        <div className="rounded-xl border border-border bg-background/40 p-4" aria-label="Dashboard header preview" role="group">
-          <p className="text-xs text-muted-foreground">{preview.date}</p>
-          <p className="mt-1 text-xl font-semibold tracking-tight">{preview.greeting}</p>
+        <p className={cn(eyebrow, "mb-2")}>Preview on your dashboard</p>
+        <div className="rounded-[10px] border-2 border-dashed border-border bg-background p-4" aria-label="Dashboard header preview" role="group">
+          <p className={cn(eyebrow, "text-muted-foreground")}>{preview.date}</p>
+          <p className={cn(display, "mt-1 text-2xl")}>{preview.greeting}</p>
           {clean ? <WhyQuote text={clean} /> : <p className="mt-1 text-sm text-muted-foreground">{preview.fallback}</p>}
         </div>
       </div>
@@ -133,22 +134,22 @@ export function DashboardLayoutForm({ initial }: { initial: DashboardLayout }) {
         Order applies within each column: left-column panels stack on the left, right-column panels on the right, and full-width panels sit below. On small screens the left column stacks above the right.
       </p>
 
-      <ol className="divide-y divide-border overflow-hidden rounded-xl border border-border" aria-label="Dashboard panels">
+      <ol className={cn(subCard, divide, "overflow-hidden")} aria-label="Dashboard panels">
         {layout.map((item, i) => {
           const meta = PANEL_BY_ID[item.id];
           const switchId = `layout-show-${item.id}`;
           return (
-            <li key={item.id} className={cn("flex items-center gap-3 px-3 py-3 transition-colors sm:px-4", item.hidden && "bg-muted/20")}>
-              <span className="tabular grid size-6 shrink-0 place-items-center rounded-md bg-muted text-[11px] font-medium text-muted-foreground" aria-hidden>
+            <li key={item.id} className={cn("flex items-center gap-3 px-3 py-3 transition-colors sm:px-4", item.hidden && "bg-muted")}>
+              <span className={cn(num, "grid size-6 shrink-0 place-items-center rounded-md border-2 border-border text-[11px]", item.hidden ? "bg-card text-muted-foreground" : "bg-block-lime text-ink")} aria-hidden>
                 {i + 1}
               </span>
-              <div className={cn("min-w-0 flex-1", item.hidden && "opacity-60")}>
+              <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <label htmlFor={switchId} className="text-sm font-medium">
+                  <label htmlFor={switchId} className={cn("text-sm font-semibold", item.hidden && "text-muted-foreground line-through decoration-2")}>
                     {meta.label}
                   </label>
-                  <span className="rounded-md border border-border px-1.5 py-px text-[10px] text-muted-foreground">{COLUMN_LABEL[meta.column]}</span>
-                  {item.hidden && <span className="text-[10px] text-muted-foreground uppercase">Hidden</span>}
+                  <span className={cn(chip, meta.column === "main" ? "bg-block-sky" : meta.column === "side" ? "bg-block-violet" : "bg-block-sun")}>{COLUMN_LABEL[meta.column]}</span>
+                  {item.hidden && <span className={cn(chip, "border-dashed bg-transparent text-muted-foreground")}>Hidden</span>}
                 </div>
                 <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">{meta.description}</p>
               </div>
@@ -265,23 +266,24 @@ export function StartPageForm({ initial }: { initial: StartPage }) {
           <label
             key={o.value}
             className={cn(
-              "flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50",
-              checked ? "border-primary/60 bg-primary/5" : "border-border hover:bg-muted/30",
+              "flex cursor-pointer items-start gap-3 rounded-[10px] border-2 border-border p-4 transition-[background-color,transform,box-shadow] motion-reduce:transition-none",
+              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-foreground",
+              checked ? "bg-block-lime text-ink shadow-brutal" : "bg-card hover:bg-muted",
             )}
           >
             <input type="radio" name={name} value={o.value} checked={checked} onChange={() => choose(o.value)} className="sr-only" />
-            <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg", checked ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+            <span className={cn("grid size-9 shrink-0 place-items-center rounded-[8px] border-2", checked ? "border-ink bg-card text-ink dark:bg-[#FFFDF5]" : "border-border bg-muted text-muted-foreground")}>
               <Icon className="size-4" aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium">{o.label}</span>
-              <span className="mt-0.5 block text-xs text-muted-foreground">{o.description}</span>
+              <span className="block font-display text-base font-extrabold tracking-[-0.01em]">{o.label}</span>
+              <span className={cn("mt-0.5 block text-xs", checked ? "text-ink" : "text-muted-foreground")}>{o.description}</span>
             </span>
             <span
               aria-hidden
-              className={cn("mt-1 grid size-4 shrink-0 place-items-center rounded-full border", checked ? "border-primary" : "border-muted-foreground/40")}
+              className={cn("mt-1 grid size-5 shrink-0 place-items-center rounded-full border-2", checked ? "border-ink bg-card dark:bg-[#FFFDF5]" : "border-border bg-card")}
             >
-              {checked && <span className="size-2 rounded-full bg-primary" />}
+              {checked && <span className="size-2.5 rounded-full bg-ink" />}
             </span>
           </label>
         );

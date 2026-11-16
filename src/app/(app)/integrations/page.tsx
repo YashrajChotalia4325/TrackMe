@@ -1,16 +1,17 @@
-import { Info } from "lucide-react";
+import { Info, Share2 } from "lucide-react";
 import { getContext } from "@/server/context";
-import { PageHeader, Panel } from "@/components/common/ui";
+import { PageHeader } from "@/components/common/ui";
 import { GoogleIntegration } from "@/components/integrations/google-integration";
 import { GithubIntegration } from "@/components/integrations/github-integration";
 import { AiImportIntegration } from "@/components/integrations/ai-import-integration";
+import { Note, ProviderCard } from "@/components/integrations/provider-card";
 
 export const metadata = { title: "Integrations" };
 
 export default async function IntegrationsPage() {
   await getContext();
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         eyebrow="Integrations"
         title="Connect your tools"
@@ -19,15 +20,14 @@ export default async function IntegrationsPage() {
       <GoogleIntegration />
       <GithubIntegration />
       <AiImportIntegration />
-      <Panel title="Social media" description="Why Instagram, X and LinkedIn aren't here">
-        <p className="flex gap-2 text-sm text-muted-foreground">
-          <Info className="mt-0.5 size-4 shrink-0" />
-          <span>
+      <ProviderCard id="social" block="bg-block-stone" icon={Share2} title="Social media" description="Why Instagram, X and LinkedIn aren't here" status="not-set-up" statusLabel="Not available">
+        <Note icon={Info} className="text-sm">
+          <span className="text-muted-foreground">
             These platforms don&apos;t offer personal-use APIs for your own activity (LinkedIn&apos;s is partner-only, X&apos;s is paid, Instagram&apos;s only covers business accounts) and none
             report screen time. Use the networking log on the Career page for LinkedIn outreach, and your phone&apos;s Digital Wellbeing for screen time.
           </span>
-        </p>
-      </Panel>
+        </Note>
+      </ProviderCard>
     </div>
   );
 }

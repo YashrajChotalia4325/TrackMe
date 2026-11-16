@@ -105,7 +105,7 @@ export function OnboardingWizard(props: Props) {
         ))}
       </div>
 
-      <section className="animate-rise flex-1 rounded-[10px] border-2 border-ink bg-card p-5 shadow-brutal-lg sm:p-7" key={step} aria-labelledby="step-title">
+      <section className="animate-rise flex-1 rounded-[10px] border-[3px] border-ink bg-card p-5 shadow-brutal-lg sm:p-7" key={step} aria-labelledby="step-title">
         <h1 id="step-title" className="font-display text-3xl leading-tight font-extrabold tracking-[-0.03em] sm:text-[34px]">
           {STEPS[step].title}
         </h1>

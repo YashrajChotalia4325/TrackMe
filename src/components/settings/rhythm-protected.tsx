@@ -11,6 +11,8 @@ import { useAction } from "@/components/common/use-action";
 import { createProtectedBlock, deleteProtectedBlock, updateProtectedBlock } from "@/server/actions/rhythm";
 import { formatDays } from "@/lib/domain/rhythm";
 import { formatMinute } from "@/lib/time";
+import { cn } from "@/lib/utils";
+import { divide, num, rowIconBtn, subCard } from "@/components/config/bold";
 
 export interface ProtectedBlockView {
   id: string;
@@ -41,29 +43,24 @@ export function ProtectedBlocksManager({ blocks }: { blocks: ProtectedBlockView[
         />
       ) : (
         <>
-          <ul className="divide-y divide-border rounded-xl border border-border">
+          <ul className={cn(subCard, divide)}>
             {blocks.map((b) => (
               <li key={b.id} className="flex items-center gap-3 px-3 py-2.5">
-                <ShieldCheck className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                <span className="grid size-7 shrink-0 place-items-center rounded-md border-2 border-border bg-block-teal text-ink" aria-hidden>
+                  <ShieldCheck className="size-3.5" />
+                </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{b.label}</p>
-                  <p className="tabular text-xs text-muted-foreground">
+                  <p className="truncate text-sm font-semibold">{b.label}</p>
+                  <p className={cn(num, "text-xs text-muted-foreground")}>
                     {formatDays(b.daysOfWeek)} · {formatMinute(b.startMinute)} – {formatMinute(b.endMinute)}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon-sm" aria-label={`Edit ${b.label}`} onClick={() => setDialog({ block: b })}>
-                  <Pencil aria-hidden />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  disabled={pending}
-                  aria-label={`Remove ${b.label}`}
-                  className="hover:text-destructive"
-                  onClick={() => run(() => deleteProtectedBlock(b.id))}
-                >
-                  <Trash2 aria-hidden />
-                </Button>
+                <button type="button" className={cn(rowIconBtn, "hover:bg-block-sky")} aria-label={`Edit ${b.label}`} onClick={() => setDialog({ block: b })}>
+                  <Pencil className="size-3.5" aria-hidden />
+                </button>
+                <button type="button" disabled={pending} aria-label={`Remove ${b.label}`} className={rowIconBtn} onClick={() => run(() => deleteProtectedBlock(b.id))}>
+                  <Trash2 className="size-3.5" aria-hidden />
+                </button>
               </li>
             ))}
           </ul>

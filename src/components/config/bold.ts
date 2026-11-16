@@ -32,7 +32,7 @@ export const inset = "rounded-[10px] border-2 border-border bg-muted";
 export const dashed = "rounded-[10px] border-2 border-dashed border-border";
 
 /** Small uppercase label above a section or figure. */
-export const eyebrow = "text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase";
+export const eyebrow = "font-sans text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase";
 /** Display font for titles and big figures. */
 export const display = "font-display font-extrabold tracking-[-0.03em]";
 /** Mono numbers: times, counts, amounts in lists and tables. */
@@ -41,8 +41,8 @@ export const num = "font-mono font-medium tabular-nums";
 /** Flat block-coloured chip with ink border and ink text. Add a bg-block-* class. */
 export const chip = "inline-flex shrink-0 items-center gap-1 rounded-md border-2 border-border px-1.5 py-0.5 text-[11px] leading-none font-semibold text-ink";
 
-/** Hairline list dividers that work in both themes. */
-export const divide = "divide-y-2 divide-foreground/10";
+/** Hairline (1px solid ink) list dividers that work in both themes. */
+export const divide = "divide-y divide-border";
 
 /** Small square icon button used for row actions (delete, edit). */
 export const rowIconBtn = cn(
@@ -82,7 +82,7 @@ export function pill(active: boolean) {
   return cn(
     "inline-flex items-center rounded-full border-2 px-3 py-1 text-xs font-semibold transition-colors",
     focusRing,
-    active ? "border-border bg-primary text-primary-foreground" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground",
+    active ? "border-border bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   );
 }
 
@@ -91,6 +91,26 @@ export function toggleBox(on: boolean) {
   return cn(
     "h-8 min-w-11 rounded-md border-2 px-2 text-xs font-semibold transition-colors",
     focusRing,
-    on ? "border-border bg-primary text-primary-foreground" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground",
+    on ? "border-border bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   );
+}
+
+/**
+ * Template colours are stored as the older palette (kept as data so existing templates and the
+ * server defaults still match). On screen each one is shown as its Bold Blocks fill.
+ */
+const TEMPLATE_FILL: Record<string, string> = {
+  "#FACC15": "var(--block-sun, #FFD23F)",
+  "#60A5FA": "var(--block-sky, #7CC4FF)",
+  "#2DD4BF": "var(--block-teal, #5EE6C8)",
+  "#22C55E": "var(--block-lime, #C6F432)",
+  "#A78BFA": "var(--block-violet, #B69CFF)",
+  "#F472B6": "var(--block-pink, #FF7AB6)",
+  "#FB923C": "var(--block-orange, #FF9F43)",
+  "#94A3B8": "var(--block-stone, #D9D2C2)",
+};
+
+/** Display fill (a block colour) for a stored template colour; unknown values show as stored. */
+export function templateFill(color: string): string {
+  return TEMPLATE_FILL[color.toUpperCase()] ?? color;
 }

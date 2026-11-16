@@ -6,6 +6,7 @@ import { resolveDayRhythm } from "@/lib/domain/rhythm";
 import type { CategoryKeyT } from "@/lib/domain/constants";
 import { addDays, DAY_LABELS, dayOfWeek, formatDuration, formatMinute } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { eyebrow, inset, num, templateFill } from "@/components/config/bold";
 import { NewTemplateButton, OverrideControl, TemplatesManager, type OverrideView, type TemplateView } from "./rhythm-templates";
 import { ProtectedBlocksManager } from "./rhythm-protected";
 import { EnergyWindowsManager } from "./rhythm-energy";
@@ -47,22 +48,22 @@ export async function RhythmTab() {
       >
         <div className="space-y-5">
           <section aria-label="Your next 7 days">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">Next 7 days</p>
+            <p className={cn(eyebrow, "mb-2")}>Next 7 days</p>
             <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
               {week.map(({ date, r }) => (
-                <li key={date} className={cn("rounded-xl border p-2.5", date === ctx.today ? "border-primary/40 bg-primary/5" : "border-border")}>
-                  <p className="text-[11px] text-muted-foreground">
+                <li key={date} className={cn("rounded-[10px] border-2 border-border p-2.5", date === ctx.today ? "bg-block-lime text-ink shadow-brutal-sm" : "bg-card")}>
+                  <p className={cn("text-[11px] font-semibold tracking-[0.06em] uppercase", date === ctx.today ? "text-ink" : "text-muted-foreground")}>
                     {date === ctx.today ? "Today" : DAY_LABELS[dayOfWeek(date)]} · {Number(date.slice(8))}
                   </p>
                   <p className="mt-1 flex items-center gap-1.5 truncate text-xs font-medium">
-                    {r.color && <span className="size-2 shrink-0 rounded-full" style={{ background: r.color }} aria-hidden />}
+                    {r.color && <span className="size-3.5 shrink-0 rounded-[4px] border-2 border-border" style={{ background: templateFill(r.color) }} aria-hidden />}
                     <span className="truncate">{r.templateName ?? "Default"}</span>
-                    {r.restDay && <Moon className="size-3 shrink-0 text-success" role="img" aria-label="Rest day" />}
+                    {r.restDay && <Moon className={cn("size-3 shrink-0", date === ctx.today ? "text-ink" : "text-success")} role="img" aria-label="Rest day" />}
                   </p>
-                  <p className="tabular mt-0.5 text-[11px] text-muted-foreground">
+                  <p className={cn(num, "mt-0.5 text-[11px]", date === ctx.today ? "text-ink" : "text-muted-foreground")}>
                     {formatMinute(r.wake)} – {formatMinute(r.sleep)}
                   </p>
-                  <p className="tabular text-[11px] text-muted-foreground">
+                  <p className={cn(num, "text-[11px]", date === ctx.today ? "text-ink" : "text-muted-foreground")}>
                     {formatDuration(r.focusLimit)} · {r.taskLimit} tasks{r.source === "override" ? " · one-off" : ""}
                   </p>
                 </li>
@@ -73,8 +74,8 @@ export async function RhythmTab() {
           <TemplatesManager templates={templates} overrides={overrides} defaults={defaults} />
 
           {templates.length > 0 && (
-            <section aria-label="Use a template on a specific date" className="rounded-xl border border-border p-3">
-              <p className="text-sm font-medium">Use a template on a specific date</p>
+            <section aria-label="Use a template on a specific date" className={cn(inset, "p-3")}>
+              <p className="text-sm font-semibold">Use a template on a specific date</p>
               <p className="mb-3 text-xs text-muted-foreground">E.g. an internship day on a Saturday, or an exam day mid-week.</p>
               <OverrideControl templates={templates} overrides={overrides} today={ctx.today} />
             </section>

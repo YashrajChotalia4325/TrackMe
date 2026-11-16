@@ -1,13 +1,14 @@
-import { AlertTriangle, CalendarDays, CheckCircle2, Inbox, Mail, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CalendarDays, Inbox, Mail, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { getContext } from "@/server/context";
 import { applicationOptions, googleConnectionState, newInsightViews, type GoogleFeatureState } from "@/server/integrations/google";
-import { Panel } from "@/components/common/ui";
 import { ConnectGoogleButton, DisconnectGoogleButton, GoogleFeatureSwitch, GoogleSyncButton } from "./google-controls";
 import { InsightList } from "./google-insights";
 import { localParts } from "@/lib/domain/google-calendar";
 import { formatDate, formatMinute } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { eyebrow, subCard } from "@/components/config/bold";
+import { Code, Note, ProviderCard, SetupStepList, StatusChip, type ProviderStatus } from "./provider-card";
 
 const TITLE = "Google Calendar & Gmail";
 
@@ -23,47 +24,35 @@ function whenLabel(at: Date, tz: string, today: string): string {
 function SetupSteps() {
   const steps: ReactNode[] = [
     <>
-      Open the <span className="font-medium text-foreground">Google Cloud Console</span> and create a project (any name, e.g. &ldquo;TrackMe&rdquo;).
+      Open the <strong>Google Cloud Console</strong> and create a project (any name, e.g. &ldquo;TrackMe&rdquo;).
     </>,
     <>
-      In <span className="font-medium text-foreground">APIs &amp; Services → Library</span>, enable the <span className="font-medium text-foreground">Google Calendar API</span> and the{" "}
-      <span className="font-medium text-foreground">Gmail API</span>.
+      In <strong>APIs &amp; Services → Library</strong>, enable the <strong>Google Calendar API</strong> and the <strong>Gmail API</strong>.
     </>,
     <>
-      Configure the <span className="font-medium text-foreground">OAuth consent screen</span>: user type External, publishing status Testing, add your own Google account as a test user, and add the
-      scopes <code className="rounded bg-muted px-1 py-0.5 text-[11px]">calendar.readonly</code> and <code className="rounded bg-muted px-1 py-0.5 text-[11px]">gmail.readonly</code>.
+      Configure the <strong>OAuth consent screen</strong>: user type External, publishing status Testing, add your own Google account as a test user, and add the scopes <Code>calendar.readonly</Code> and{" "}
+      <Code>gmail.readonly</Code>.
     </>,
     <>
-      <span className="font-medium text-foreground">Credentials → Create credentials → OAuth client ID</span>, application type Web application, with the authorised redirect URI{" "}
-      <code className="rounded bg-muted px-1 py-0.5 text-[11px] break-all">http://localhost:3000/api/auth/callback/google</code> (and{" "}
-      <code className="rounded bg-muted px-1 py-0.5 text-[11px] break-all">https://your-domain/api/auth/callback/google</code> for production).
+      <strong>Credentials → Create credentials → OAuth client ID</strong>, application type Web application, with the authorised redirect URI{" "}
+      <Code wrap>http://localhost:3000/api/auth/callback/google</Code> (and <Code wrap>https://your-domain/api/auth/callback/google</Code> for production).
     </>,
     <>
-      Put <code className="rounded bg-muted px-1 py-0.5 text-[11px]">GOOGLE_CLIENT_ID</code> and <code className="rounded bg-muted px-1 py-0.5 text-[11px]">GOOGLE_CLIENT_SECRET</code> in your{" "}
-      <code className="rounded bg-muted px-1 py-0.5 text-[11px]">.env</code> and restart TrackMe. Connect buttons will appear here.
+      Put <Code>GOOGLE_CLIENT_ID</Code> and <Code>GOOGLE_CLIENT_SECRET</Code> in your <Code>.env</Code> and restart TrackMe. Connect buttons will appear here.
     </>,
   ];
-  return (
-    <ol className="grid gap-2.5 text-sm text-muted-foreground">
-      {steps.map((s, i) => (
-        <li key={i} className="flex gap-3">
-          <span className="tabular grid size-5 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-medium text-foreground">{i + 1}</span>
-          <span className="min-w-0">{s}</span>
-        </li>
-      ))}
-    </ol>
-  );
+  return <SetupStepList steps={steps} />;
 }
 
 function PrivacyNote() {
   return (
-    <p className="flex gap-2 text-xs text-muted-foreground">
-      <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" aria-hidden />
-      <span>
-        Read-only. Calendar events become fixed commitments in your plan. For Gmail, only the sender, subject, date and Google&apos;s short preview snippet of matching career/college emails are stored —
+    <Note icon={ShieldCheck} tone="safe">
+      <span className="font-semibold">Read-only.</span>{" "}
+      <span className="text-muted-foreground">
+        Calendar events become fixed commitments in your plan. For Gmail, only the sender, subject, date and Google&apos;s short preview snippet of matching career/college emails are stored —
         never full emails. TrackMe never sends, labels, deletes or edits anything in your Google account.
       </span>
-    </p>
+    </Note>
   );
 }
 
@@ -88,30 +77,25 @@ function FeatureCard({
   today: string;
   stat: string;
 }) {
-  const status = !state.granted ? "Not connected" : !state.enabled ? "Paused" : state.lastError ? "Needs attention" : "Connected";
-  const tone = !state.granted ? "text-muted-foreground" : !state.enabled ? "text-muted-foreground" : state.lastError ? "text-warning" : "text-success";
+  const status: ProviderStatus = !state.granted ? "not-connected" : !state.enabled ? "paused" : state.lastError ? "error" : "connected";
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border p-4">
+    <div className={cn(subCard, "flex flex-col gap-3 p-4")}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
-            <Icon className="size-4" aria-hidden />
+          <span className="grid size-9 shrink-0 place-items-center rounded-[8px] border-2 border-border bg-block-sky text-ink" aria-hidden>
+            <Icon className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-medium">{name}</p>
+            <h3 className="font-display text-base leading-tight font-extrabold tracking-[-0.01em]">{name}</h3>
             <p className="text-xs text-muted-foreground">{blurb}</p>
           </div>
         </div>
-        <span className={cn("inline-flex shrink-0 items-center gap-1 text-xs font-medium", tone)}>
-          {status === "Connected" && <CheckCircle2 className="size-3.5" aria-hidden />}
-          {status === "Needs attention" && <AlertTriangle className="size-3.5" aria-hidden />}
-          {status}
-        </span>
+        <StatusChip status={status} />
       </div>
 
       {state.granted && (
         <div className="grid gap-1 text-xs text-muted-foreground">
-          <p>{stat}</p>
+          <p className="font-semibold text-foreground">{stat}</p>
           {state.lastSyncedAt ? (
             <p>
               {state.lastError ? "Last attempt" : "Last synced"} {whenLabel(state.lastSyncedAt, tz, today)}
@@ -120,10 +104,9 @@ function FeatureCard({
             <p>Not synced yet — it syncs automatically, or use Sync now.</p>
           )}
           {state.lastError && (
-            <p role="alert" className="flex gap-1.5 text-warning">
-              <AlertTriangle className="mt-0.5 size-3 shrink-0" aria-hidden />
+            <Note icon={AlertTriangle} tone="error" role="alert" className="mt-1">
               {state.lastError}
-            </p>
+            </Note>
           )}
         </div>
       )}
@@ -149,12 +132,12 @@ export async function GoogleIntegration() {
 
   if (!state.configured) {
     return (
-      <Panel id="google" title={TITLE} description="Not set up yet — about 10 minutes in Google Cloud Console, free for personal use.">
+      <ProviderCard id="google" block="bg-block-sky" icon={CalendarDays} title={TITLE} status="not-set-up" description="About 10 minutes in Google Cloud Console, free for personal use.">
         <div className="grid gap-5">
           <SetupSteps />
           <PrivacyNote />
         </div>
-      </Panel>
+      </ProviderCard>
     );
   }
 
@@ -164,10 +147,13 @@ export async function GoogleIntegration() {
   const [insights, applications] = showInsights ? await Promise.all([newInsightViews(ctx), applicationOptions(ctx)]) : [[], []];
 
   return (
-    <Panel
+    <ProviderCard
       id="google"
+      block="bg-block-sky"
+      icon={CalendarDays}
       title={TITLE}
       description="Your calendar blocks time in your plan; your inbox suggests interviews, tests and deadlines."
+      status={linked && (calendar.granted || gmail.granted) ? (calendar.lastError || gmail.lastError ? "error" : "connected") : "not-connected"}
       action={
         linked ? (
           <div className="flex flex-wrap items-center justify-end gap-1">
@@ -205,7 +191,7 @@ export async function GoogleIntegration() {
 
         {(gmail.granted || insights.length > 0) && (
           <div className="grid gap-3">
-            <h3 className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            <h3 className={cn(eyebrow, "flex items-center gap-2")}>
               <Inbox className="size-3.5" aria-hidden /> Suggestions from your inbox
             </h3>
             {insights.length > 0 ? (
@@ -218,6 +204,6 @@ export async function GoogleIntegration() {
 
         <PrivacyNote />
       </div>
-    </Panel>
+    </ProviderCard>
   );
 }

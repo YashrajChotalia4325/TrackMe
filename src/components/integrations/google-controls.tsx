@@ -27,7 +27,7 @@ export function ConnectGoogleButton({ feature, reconnect = false }: { feature: "
     });
   return (
     <Button size="sm" variant={reconnect ? "outline" : "default"} onClick={connect} disabled={pending}>
-      {pending ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : reconnect ? <Link2 className="size-3.5" aria-hidden /> : <Icon className="size-3.5" aria-hidden />}
+      {pending ? <Loader2 className="size-3.5 motion-safe:animate-spin" aria-hidden /> : reconnect ? <Link2 className="size-3.5" aria-hidden /> : <Icon className="size-3.5" aria-hidden />}
       {reconnect ? `Reconnect ${name}` : `Connect ${name}`}
     </Button>
   );
@@ -47,7 +47,7 @@ export function GoogleSyncButton() {
   const { run, pending } = useAction();
   return (
     <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => syncGoogleNow())}>
-      <RefreshCw className={pending ? "size-3.5 animate-spin" : "size-3.5"} aria-hidden />
+      <RefreshCw className={pending ? "size-3.5 motion-safe:animate-spin" : "size-3.5"} aria-hidden />
       {pending ? "Syncing…" : "Sync now"}
     </Button>
   );

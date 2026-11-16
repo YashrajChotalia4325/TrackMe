@@ -9,6 +9,9 @@ import { deleteAiUsage, importAiUsage } from "@/server/actions/ai-import";
 import { AI_PROVIDER_META, aggregateByDay, chunkForUpload, detectFormat, explainUnrecognized, summarize, type AiDayAggregate, type AiImportSummary, type AiProvider } from "@/lib/domain/ai-export-parser";
 import { formatDate } from "@/lib/time";
 import type { ActionResult } from "@/lib/validation";
+import { cn } from "@/lib/utils";
+import { display, eyebrow, focusRing, subCard } from "@/components/config/bold";
+import { Note } from "./provider-card";
 
 const LARGE_FILE_BYTES = 200 * 1024 * 1024;
 const MAX_FILE_BYTES = 1536 * 1024 * 1024;
@@ -148,15 +151,12 @@ export function AiImportButton({ provider, timeZone, hasData }: { provider: AiPr
             <DialogDescription>Choose conversations.json from your unzipped {label} data export.</DialogDescription>
           </DialogHeader>
 
-          <p className="flex gap-2 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
-            <span>
-              The file is read on this device. Message text never leaves your browser — TrackMe only saves daily counts and conversation titles.
-            </span>
-          </p>
+          <Note icon={ShieldCheck} tone="safe">
+            The file is read on this device. Message text never leaves your browser — TrackMe only saves daily counts and conversation titles.
+          </Note>
 
           <div className="grid gap-1.5">
-            <label htmlFor={inputId} className="text-xs font-medium text-muted-foreground">
+            <label htmlFor={inputId} className={cn(eyebrow, "font-mono tracking-normal normal-case")}>
               conversations.json
             </label>
             <input
@@ -167,37 +167,39 @@ export function AiImportButton({ provider, timeZone, hasData }: { provider: AiPr
               disabled={pending || state.phase === "reading"}
               aria-describedby={statusId}
               onChange={(e) => void onFile(e.target.files?.[0])}
-              className="block w-full cursor-pointer rounded-lg border border-input bg-transparent text-sm text-muted-foreground outline-none file:mr-3 file:cursor-pointer file:border-0 file:border-r file:border-input file:bg-secondary file:px-3 file:py-2 file:text-sm file:font-medium file:text-secondary-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
+              className={cn(
+                "block w-full cursor-pointer rounded-[8px] border-2 border-border bg-card text-sm text-muted-foreground shadow-brutal-sm disabled:cursor-not-allowed disabled:opacity-50",
+                "file:mr-3 file:cursor-pointer file:border-0 file:border-r-2 file:border-solid file:border-border file:bg-block-lime file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#111111]",
+                focusRing,
+              )}
             />
             {hasData && <p className="text-xs text-muted-foreground">Re-importing replaces the days the new file covers — nothing is counted twice.</p>}
           </div>
 
           <div id={statusId} aria-live="polite" className="grid gap-3">
             {state.phase !== "idle" && "warning" in state && state.warning && (
-              <p className="flex gap-2 text-xs text-warning">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <Note icon={AlertTriangle} tone="warn">
                 {state.warning}
-              </p>
+              </Note>
             )}
             {state.phase === "reading" && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" aria-hidden /> Reading {state.fileName}…
+                <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden /> Reading {state.fileName}…
               </p>
             )}
             {state.phase === "error" && (
-              <p role="alert" className="flex gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-                <span>{state.error}</span>
-              </p>
+              <Note icon={AlertTriangle} tone="error" role="alert" className="text-sm">
+                {state.error}
+              </Note>
             )}
             {ready && (
-              <div className="rounded-xl border border-border p-3">
-                <p className="flex items-center gap-2 text-sm font-medium">
+              <div className={cn(subCard, "p-3")}>
+                <p className="flex items-center gap-2 text-sm font-semibold">
                   <FileJson className="size-4 text-muted-foreground" aria-hidden />
                   {AI_PROVIDER_META[ready.provider].label} export · {formatDate(ready.summary.from!)} – {formatDate(ready.summary.to!)}
                 </p>
                 {ready.provider !== provider && (
-                  <p className="mt-2 text-xs text-warning">
+                  <p className="mt-2 text-xs font-semibold text-warning">
                     This is a {AI_PROVIDER_META[ready.provider].label} export, not {label}, so it will be saved as {AI_PROVIDER_META[ready.provider].label} usage.
                   </p>
                 )}
@@ -207,16 +209,16 @@ export function AiImportButton({ provider, timeZone, hasData }: { provider: AiPr
                     ["Messages sent", ready.summary.messages],
                     ["Chats (per day)", ready.summary.conversations],
                   ].map(([k, v]) => (
-                    <div key={k} className="rounded-lg bg-muted/50 px-2 py-2">
-                      <dt className="text-[11px] text-muted-foreground">{k}</dt>
-                      <dd className="tabular text-base font-semibold">{Number(v).toLocaleString()}</dd>
+                    <div key={k} className="rounded-[8px] border-2 border-border bg-muted px-2 py-2">
+                      <dt className={cn(eyebrow, "text-[10px] tracking-[0.06em]")}>{k}</dt>
+                      <dd className={cn(display, "mt-0.5 text-xl")}>{Number(v).toLocaleString()}</dd>
                     </div>
                   ))}
                 </dl>
                 {recentTitles.length > 0 && (
                   <div className="mt-3">
-                    <p className="text-xs text-muted-foreground">Recent titles that will be saved:</p>
-                    <ul className="mt-1 space-y-0.5 text-xs">
+                    <p className={eyebrow}>Recent titles that will be saved</p>
+                    <ul className="mt-1.5 space-y-0.5 text-xs font-medium">
                       {recentTitles.map((t) => (
                         <li key={t} className="truncate">
                           {t}
@@ -241,7 +243,7 @@ export function AiImportButton({ provider, timeZone, hasData }: { provider: AiPr
               Cancel
             </Button>
             <Button disabled={!ready || pending} onClick={submit}>
-              {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+              {pending && <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden />}
               {ready ? `Import ${ready.summary.activeDays.toLocaleString()} ${ready.summary.activeDays === 1 ? "day" : "days"}` : "Import"}
             </Button>
           </DialogFooter>
@@ -276,7 +278,7 @@ export function AiDeleteButton({ provider, days }: { provider: AiProvider; days:
               Keep it
             </Button>
             <Button variant="destructive" disabled={pending} onClick={() => run(() => deleteAiUsage(provider), { onSuccess: () => setOpen(false) })}>
-              {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+              {pending && <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden />}
               Delete
             </Button>
           </DialogFooter>

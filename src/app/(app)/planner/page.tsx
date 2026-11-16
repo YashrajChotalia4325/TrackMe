@@ -9,6 +9,7 @@ import { PlanWeekButton, RescheduleDayButton } from "@/components/tasks/proposal
 import { Button } from "@/components/ui/button";
 import { addDays, dayOfWeek, formatDate, formatDuration, isISODate, weekStart } from "@/lib/time";
 import { MODE_META } from "@/lib/domain/constants";
+import { SEGMENT } from "@/components/tasks/category-style";
 
 export const metadata = { title: "Weekly Planner" };
 
@@ -32,7 +33,7 @@ export default async function PlannerPage({ searchParams }: PageProps<"/planner"
         description={`${formatDate(ws, "dm")} – ${formatDate(addDays(ws, 6))}. Drag tasks between days, or use “Move” on any card.`}
         actions={
           <>
-            <div className="flex items-center rounded-lg border border-border">
+            <div className={SEGMENT}>
               <Button variant="ghost" size="icon" aria-label="Previous week" nativeButton={false} render={<Link href={`/planner?week=${addDays(ws, -7)}`} />}>
                 <ChevronLeft className="size-4" />
               </Button>
@@ -60,13 +61,13 @@ export default async function PlannerPage({ searchParams }: PageProps<"/planner"
             {active.map((t) => (
               <div key={t.id}>
                 <div className="mb-1.5 flex items-baseline justify-between gap-2 text-sm">
-                  <span className="truncate">{t.label}</span>
-                  <span className="tabular shrink-0 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{t.unit === "MINUTES" ? formatDuration(t.done) : t.done}</span> / {t.unit === "MINUTES" ? formatDuration(t.target) : `${t.target} sessions`}
+                  <span className="truncate font-semibold">{t.label}</span>
+                  <span className="shrink-0 font-mono text-xs font-medium text-muted-foreground tabular-nums">
+                    <span className="text-foreground">{t.unit === "MINUTES" ? formatDuration(t.done) : t.done}</span> / {t.unit === "MINUTES" ? formatDuration(t.target) : `${t.target} sessions`}
                   </span>
                 </div>
-                <Bar value={t.done} max={t.target} color={t.done >= t.target ? "var(--success)" : undefined} label={t.label} />
-                {t.scheduled > 0 && <p className="mt-1 text-[11px] text-muted-foreground">+{t.unit === "MINUTES" ? formatDuration(t.scheduled) : t.scheduled} scheduled{t.optional ? " · optional" : ""}</p>}
+                <Bar value={t.done} max={t.target} color={t.done >= t.target ? "var(--block-lime)" : undefined} label={t.label} />
+                {t.scheduled > 0 && <p className="mt-1 font-mono text-[11px] font-medium text-muted-foreground tabular-nums">+{t.unit === "MINUTES" ? formatDuration(t.scheduled) : t.scheduled} scheduled{t.optional ? " · optional" : ""}</p>}
               </div>
             ))}
           </div>

@@ -51,7 +51,7 @@ export function GithubSyncControls({ login, needsReconnect = false }: { login: s
     <div className="flex flex-wrap items-center gap-2">
       {needsReconnect && <GithubConnectButton reconnect />}
       <Button variant="outline" disabled={pending} onClick={() => run(() => syncGithubNow())}>
-        <RefreshCw className={pending ? "size-4 animate-spin" : "size-4"} aria-hidden /> Sync now
+        <RefreshCw className={pending ? "size-4 motion-safe:animate-spin" : "size-4"} aria-hidden /> Sync now
       </Button>
       <Button variant="ghost" className="text-muted-foreground hover:text-destructive" disabled={pending} onClick={() => setConfirmOpen(true)}>
         <Link2Off className="size-4" aria-hidden /> Disconnect

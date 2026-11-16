@@ -12,6 +12,7 @@ import { useAction } from "@/components/common/use-action";
 import { addMilestone, deleteGoal, deleteMilestone, toggleMilestone, upsertGoal } from "@/server/actions/goals";
 import { diffDays, formatDate } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { CategoryChip, CategorySwatch, FOCUS_RING, ON_BLOCK, ON_BLOCK_HOVER, REVEAL_ON_HOVER, categoryBlockVar } from "@/components/tasks/category-style";
 
 export interface GoalView {
   id: string;
@@ -40,55 +41,86 @@ export function GoalCard({ goal, today, categories }: { goal: GoalView; today: s
   const [ms, setMs] = useState({ title: "", date: "" });
   const daysLeft = diffDays(goal.targetDate, today);
   return (
-    <article id={goal.id} className="animate-rise scroll-mt-20 rounded-2xl border border-border bg-card p-5">
+    <article id={goal.id} className="animate-rise scroll-mt-20 rounded-[10px] border-2 border-ink bg-card p-5 shadow-brutal">
       <div className="flex items-start gap-3">
-        <span className="mt-1.5 size-2.5 shrink-0 rounded-full" style={{ background: goal.color }} aria-hidden />
+        <CategorySwatch color={goal.color} className="mt-1 size-4" />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <h3 className="font-semibold tracking-tight">{goal.title}</h3>
-            <span className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-medium", goal.status === "ACHIEVED" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground")}>{STATUS_LABEL[goal.status]}</span>
-            {goal.priority === "CRITICAL" || goal.priority === "HIGH" ? <span className="text-[10px] font-medium text-warning">{goal.priority.toLowerCase()} priority</span> : null}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            <h3 className="font-display text-lg leading-tight font-extrabold tracking-[-0.01em]">{goal.title}</h3>
+            <span className={cn("rounded-[6px] border-2 border-ink px-1.5 text-[10px] leading-4 font-semibold tracking-[0.04em] uppercase", goal.status === "ACHIEVED" ? cn("bg-block-lime", ON_BLOCK) : goal.status === "IN_PROGRESS" ? "bg-card text-foreground" : "bg-muted text-muted-foreground")}>{STATUS_LABEL[goal.status]}</span>
+            {goal.priority === "CRITICAL" || goal.priority === "HIGH" ? <span className="text-[11px] font-semibold text-warning">{goal.priority.charAt(0) + goal.priority.slice(1).toLowerCase()} priority</span> : null}
           </div>
-          {goal.description && <p className="mt-0.5 text-sm text-muted-foreground">{goal.description}</p>}
-          <p className="mt-1 text-xs text-muted-foreground">
-            {goal.categoryName ?? "General"} · {formatDate(goal.startDate, "dm")} → {formatDate(goal.targetDate)} · {daysLeft >= 0 ? `${daysLeft} days left` : "past target date"}
-            {goal.relatedTasks > 0 && ` · ${goal.relatedDone}/${goal.relatedTasks} related tasks done`}
+          {goal.description && <p className="mt-1 text-sm text-muted-foreground">{goal.description}</p>}
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+            {goal.categoryName ? <CategoryChip color={goal.color} name={goal.categoryName} /> : <span className="font-semibold text-foreground">General</span>}
+            <span className="font-mono font-medium tabular-nums">
+              {formatDate(goal.startDate, "dm")} → {formatDate(goal.targetDate)}
+            </span>
+            <span aria-hidden>·</span>
+            <span className={cn("font-semibold", daysLeft < 0 ? "text-destructive" : "text-foreground")}>{daysLeft >= 0 ? <><span className="font-mono tabular-nums">{daysLeft}</span> days left</> : "past target date"}</span>
+            {goal.relatedTasks > 0 && (
+              <>
+                <span aria-hidden>·</span>
+                <span>
+                  <span className="font-mono font-medium tabular-nums">
+                    {goal.relatedDone}/{goal.relatedTasks}
+                  </span>{" "}
+                  related tasks done
+                </span>
+              </>
+            )}
           </p>
         </div>
-        <button type="button" onClick={() => setEditing(true)} className="rounded p-1.5 text-muted-foreground hover:text-foreground" aria-label={`Edit ${goal.title}`}>
-          <Pencil className="size-4" />
+        <button type="button" onClick={() => setEditing(true)} className={cn("grid size-8 shrink-0 place-items-center rounded-[8px] border-2 border-ink bg-card text-foreground shadow-brutal-sm press hover:bg-muted", FOCUS_RING)} aria-label={`Edit ${goal.title}`}>
+          <Pencil className="size-4" aria-hidden />
         </button>
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <Bar value={goal.progress} max={100} color={goal.color} label={`${goal.title} progress`} />
-        <span className="tabular w-10 text-right text-sm font-semibold">{goal.progress}%</span>
+        <Bar value={goal.progress} max={100} color={categoryBlockVar(null, goal.color)} label={`${goal.title} progress`} className="h-3.5 bg-muted" />
+        <span className="w-12 text-right font-display text-xl leading-none font-extrabold tracking-[-0.02em] tabular-nums">{goal.progress}%</span>
       </div>
-      <p className="mt-1 text-[11px] text-muted-foreground">{goal.progressMode === "MILESTONES" ? "Calculated from completed milestones" : "Updated manually"}</p>
+      <p className="mt-1.5 eyebrow text-muted-foreground">{goal.progressMode === "MILESTONES" ? "Calculated from completed milestones" : "Updated manually"}</p>
 
-      <ul className="mt-4 space-y-0.5">
-        {goal.milestones.map((m) => (
-          <li key={m.id} className="group flex items-center gap-2">
-            <button type="button" disabled={pending} onClick={() => run(() => toggleMilestone(m.id), { success: false })} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1.5 py-1 text-left text-sm hover:bg-muted/50" aria-pressed={!!m.doneAt}>
-              <span className={cn("grid size-4 shrink-0 place-items-center rounded-full border", m.doneAt ? "border-success bg-success text-black" : "border-muted-foreground/40")}>{m.doneAt && <Check className="size-2.5" strokeWidth={3} />}</span>
-              <span className={cn("truncate", m.doneAt && "text-muted-foreground line-through")}>{m.title}</span>
-              {m.targetDate && <span className={cn("ml-auto shrink-0 text-[11px]", !m.doneAt && m.targetDate < today ? "text-warning" : "text-muted-foreground")}>{formatDate(m.targetDate, "dm")}</span>}
-            </button>
-            <button type="button" disabled={pending} onClick={() => run(() => deleteMilestone(m.id))} className="rounded p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive focus-visible:opacity-100" aria-label={`Delete milestone ${m.title}`}>
-              <Trash2 className="size-3.5" />
-            </button>
-          </li>
-        ))}
-      </ul>
+      {goal.milestones.length > 0 && (
+        <ul className="mt-4 space-y-1.5">
+          {goal.milestones.map((m) => (
+            <li key={m.id} className="group flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => run(() => toggleMilestone(m.id), { success: false })}
+                className={cn("flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] border-2 border-ink px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted disabled:cursor-not-allowed", m.doneAt ? "bg-muted" : "bg-card", FOCUS_RING)}
+                aria-pressed={!!m.doneAt}
+              >
+                <span className={cn("grid size-5 shrink-0 place-items-center rounded-[5px] border-2 border-ink", m.doneAt ? cn("bg-block-lime", ON_BLOCK) : "bg-card")} aria-hidden>
+                  {m.doneAt && <Check className="size-3.5" strokeWidth={3.5} />}
+                </span>
+                <span className={cn("truncate font-medium", m.doneAt && "text-muted-foreground line-through decoration-2")}>{m.title}</span>
+                {m.targetDate && <span className={cn("ml-auto shrink-0 font-mono text-[11px] font-medium tabular-nums", !m.doneAt && m.targetDate < today ? "font-semibold text-warning" : "text-muted-foreground")}>{formatDate(m.targetDate, "dm")}</span>}
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => run(() => deleteMilestone(m.id))}
+                className={cn("grid size-8 shrink-0 place-items-center rounded-[8px] border-2 border-transparent text-foreground transition hover:border-ink hover:bg-block-danger", ON_BLOCK_HOVER, REVEAL_ON_HOVER, FOCUS_RING)}
+                aria-label={`Delete milestone ${m.title}`}
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       <form
-        className="mt-2 flex gap-2"
+        className="mt-3 flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           run(() => addMilestone(goal.id, ms.title, ms.date || null), { onSuccess: () => setMs({ title: "", date: "" }) });
         }}
       >
         <Input value={ms.title} onChange={(e) => setMs({ ...ms, title: e.target.value })} placeholder="Add milestone" aria-label={`New milestone for ${goal.title}`} className="h-8" />
-        <Input type="date" value={ms.date} onChange={(e) => setMs({ ...ms, date: e.target.value })} aria-label="Milestone target date" className="h-8 w-40 dark:[color-scheme:dark]" />
+        <Input type="date" value={ms.date} onChange={(e) => setMs({ ...ms, date: e.target.value })} aria-label="Milestone target date" className="h-8 w-40 font-mono tabular-nums dark:[color-scheme:dark]" />
         <Button type="submit" size="sm" variant="secondary" disabled={pending || !ms.title.trim()} aria-label="Add milestone">
           <Plus className="size-4" />
         </Button>

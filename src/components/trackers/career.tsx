@@ -12,6 +12,7 @@ import { addNetworking, addProAchievement, deleteJob, deleteNetworking, deletePr
 import { JOB_STATUSES } from "@/lib/domain/constants";
 import { formatDate } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { FOCUS_RING, ON_BLOCK, ON_BLOCK_HOVER, REVEAL_ON_HOVER } from "@/components/tasks/category-style";
 
 export const JOB_LABEL: Record<string, string> = {
   INTERESTED: "Interested",
@@ -23,13 +24,17 @@ export const JOB_LABEL: Record<string, string> = {
   REJECTED: "Rejected",
   ACCEPTED: "Accepted",
 };
+/** Status select fills: Bold Blocks colours with ink text (the bg-block-* class keeps #111111 text in the dark theme). */
 const JOB_TONE: Record<string, string> = {
-  OFFER: "text-success",
-  ACCEPTED: "text-success",
-  REJECTED: "text-muted-foreground",
-  INTERVIEW: "text-primary",
-  ASSESSMENT: "text-primary",
+  OFFER: "bg-block-lime text-ink",
+  ACCEPTED: "bg-block-lime text-ink",
+  REJECTED: "bg-muted text-muted-foreground",
+  INTERVIEW: "bg-block-sun text-ink",
+  ASSESSMENT: "bg-block-sky text-ink",
 };
+
+/** Small icon button for row actions (edit / delete). */
+const ROW_ICON_BTN = "grid size-8 place-items-center rounded-[8px] border-2 border-transparent text-foreground transition hover:border-ink";
 
 export interface JobView {
   id: string;
@@ -62,9 +67,19 @@ export function JobTracker({ jobs }: { jobs: JobView[] }) {
             type="button"
             aria-pressed={filter === s}
             onClick={() => setFilter(s)}
-            className={cn("rounded-full border px-2.5 py-1 text-xs transition-colors", filter === s ? "border-primary/50 bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-foreground")}
+            className={cn(
+              "rounded-full border-2 border-ink px-2.5 py-0.5 text-xs font-semibold transition-colors",
+              FOCUS_RING,
+              filter === s ? cn("bg-block-lime shadow-brutal-sm", ON_BLOCK) : "bg-card text-foreground hover:bg-muted",
+            )}
           >
-            {s === "ACTIVE" ? "Active" : s === "ALL" ? `All (${jobs.length})` : `${JOB_LABEL[s]} (${counts[s]})`}
+            {s === "ACTIVE" ? (
+              "Active"
+            ) : (
+              <>
+                {s === "ALL" ? "All" : JOB_LABEL[s]} <span className="font-mono font-medium tabular-nums">({s === "ALL" ? jobs.length : counts[s]})</span>
+              </>
+            )}
           </button>
         ))}
         <Button size="sm" className="ml-auto" onClick={() => setCreating(true)}>
@@ -72,36 +87,38 @@ export function JobTracker({ jobs }: { jobs: JobView[] }) {
         </Button>
       </div>
       {shown.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">No applications here yet.</p>
+        <p className="rounded-[10px] border-2 border-dashed border-ink bg-card px-4 py-8 text-center text-sm font-medium text-muted-foreground">No applications here yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border">
+        <div className="scrollbar-thin overflow-x-auto rounded-[10px] border-2 border-ink bg-card shadow-brutal">
           <table className="w-full min-w-[640px] text-sm">
-            <thead className="bg-muted/40 text-left text-xs text-muted-foreground">
+            <thead className="border-b-2 border-ink bg-muted text-left text-foreground">
               <tr>
-                <th className="px-3 py-2 font-medium">Company · Role</th>
-                <th className="px-3 py-2 font-medium">Status</th>
-                <th className="px-3 py-2 font-medium">Applied</th>
-                <th className="px-3 py-2 font-medium">Salary</th>
-                <th className="px-3 py-2 font-medium">Next step</th>
-                <th className="w-20" />
+                <th scope="col" className="eyebrow px-3 py-2.5">Company · Role</th>
+                <th scope="col" className="eyebrow px-3 py-2.5">Status</th>
+                <th scope="col" className="eyebrow px-3 py-2.5">Applied</th>
+                <th scope="col" className="eyebrow px-3 py-2.5">Salary</th>
+                <th scope="col" className="eyebrow px-3 py-2.5">Next step</th>
+                <th scope="col" className="w-24">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               {shown.map((j) => (
-                <tr key={j.id} className="border-t border-border">
+                <tr key={j.id} className="border-t-2 border-ink first:border-t-0 hover:bg-background">
                   <td className="px-3 py-2.5">
-                    <p className="font-medium">
+                    <p className="font-semibold">
                       {j.company}
                       {j.url && (
-                        <a href={j.url} target="_blank" rel="noreferrer noopener" className="ml-1 inline-flex text-muted-foreground hover:text-foreground" aria-label={`Open ${j.company} posting`}>
-                          <ExternalLink className="size-3" />
+                        <a href={j.url} target="_blank" rel="noreferrer noopener" className={cn("ml-1 inline-flex rounded-[4px] align-middle text-foreground hover:text-muted-foreground", FOCUS_RING)} aria-label={`Open ${j.company} posting (opens in a new tab)`}>
+                          <ExternalLink className="size-3" aria-hidden />
                         </a>
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">{j.role}</p>
                   </td>
                   <td className="px-3 py-2.5">
-                    <NativeSelect aria-label={`Status for ${j.company}`} value={j.status} disabled={pending} onChange={(e) => run(() => setJobStatus(j.id, e.target.value as (typeof JOB_STATUSES)[number]))} className={cn("h-8 w-36 text-xs", JOB_TONE[j.status])}>
+                    <NativeSelect aria-label={`Status for ${j.company}`} value={j.status} disabled={pending} onChange={(e) => run(() => setJobStatus(j.id, e.target.value as (typeof JOB_STATUSES)[number]))} className={cn("h-8 w-36 rounded-[8px] border-2 border-ink text-xs font-semibold", JOB_TONE[j.status])}>
                       {JOB_STATUSES.map((s) => (
                         <option key={s} value={s}>
                           {JOB_LABEL[s]}
@@ -109,16 +126,18 @@ export function JobTracker({ jobs }: { jobs: JobView[] }) {
                       ))}
                     </NativeSelect>
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-muted-foreground">{j.appliedOn ? formatDate(j.appliedOn, "dm") : "—"}</td>
-                  <td className="px-3 py-2.5 text-xs">{j.salary ?? "—"}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs font-medium text-muted-foreground tabular-nums">{j.appliedOn ? formatDate(j.appliedOn, "dm") : "—"}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs font-medium tabular-nums">{j.salary ?? "—"}</td>
                   <td className="max-w-48 truncate px-3 py-2.5 text-xs text-muted-foreground">{j.nextStep ?? "—"}</td>
-                  <td className="px-2 py-2.5 text-right">
-                    <button type="button" onClick={() => setEditing(j)} className="rounded p-1.5 text-muted-foreground hover:text-foreground" aria-label={`Edit ${j.company}`}>
-                      <Pencil className="size-3.5" />
-                    </button>
-                    <button type="button" disabled={pending} onClick={() => run(() => deleteJob(j.id))} className="rounded p-1.5 text-muted-foreground hover:text-destructive" aria-label={`Delete ${j.company}`}>
-                      <Trash2 className="size-3.5" />
-                    </button>
+                  <td className="px-2 py-2.5">
+                    <div className="flex justify-end gap-1">
+                      <button type="button" onClick={() => setEditing(j)} className={cn(ROW_ICON_BTN, "hover:bg-muted", FOCUS_RING)} aria-label={`Edit ${j.company}`}>
+                        <Pencil className="size-3.5" aria-hidden />
+                      </button>
+                      <button type="button" disabled={pending} onClick={() => run(() => deleteJob(j.id))} className={cn(ROW_ICON_BTN, "hover:bg-block-danger disabled:opacity-50", ON_BLOCK_HOVER, FOCUS_RING)} aria-label={`Delete ${j.company}`}>
+                        <Trash2 className="size-3.5" aria-hidden />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -216,17 +235,19 @@ export function AchievementLog({ items, today }: { items: { id: string; date: st
         </div>
         <Button type="submit" disabled={pending || !v.title.trim()} className="self-end">Record</Button>
       </form>
-      <ul className="divide-y divide-border">
-        {items.length === 0 && <li className="py-4 text-sm text-muted-foreground">No achievements recorded yet. Small wins count — write them down while they&apos;re fresh.</li>}
+      <ul className="space-y-2">
+        {items.length === 0 && <li className="rounded-[8px] border-2 border-dashed border-ink px-3 py-4 text-sm text-muted-foreground">No achievements recorded yet. Small wins count — write them down while they&apos;re fresh.</li>}
         {items.map((a) => (
-          <li key={a.id} className="group flex items-start gap-3 py-2.5 text-sm">
-            <span className="w-16 shrink-0 text-xs text-muted-foreground">{formatDate(a.date, "dm")}</span>
+          <li key={a.id} className="group flex items-start gap-3 rounded-[8px] border-2 border-ink bg-card px-3 py-2 text-sm">
+            <span className="w-14 shrink-0 pt-0.5 font-mono text-xs font-medium text-muted-foreground tabular-nums">{formatDate(a.date, "dm")}</span>
             <span className="min-w-0 flex-1">
-              <span className="font-medium">{a.title}</span>
-              {a.impact && <span className="block text-xs text-success">{a.impact}</span>}
+              <span className="font-semibold">{a.title}</span>
+              {a.impact && <span className="block text-xs font-medium text-success">{a.impact}</span>}
             </span>
-            <span className="text-[11px] text-muted-foreground capitalize">{a.kind.toLowerCase()}</span>
-            <button type="button" disabled={pending} onClick={() => run(() => deleteProAchievement(a.id))} className="rounded p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive focus-visible:opacity-100" aria-label="Delete achievement"><Trash2 className="size-3.5" /></button>
+            <span className={cn("shrink-0 rounded-[6px] border-2 border-ink bg-block-sun px-1.5 text-[11px] leading-4 font-semibold capitalize", ON_BLOCK)}>{a.kind.toLowerCase()}</span>
+            <button type="button" disabled={pending} onClick={() => run(() => deleteProAchievement(a.id))} className={cn(ROW_ICON_BTN, "-my-1 size-7 shrink-0 hover:bg-block-danger", ON_BLOCK_HOVER, REVEAL_ON_HOVER, FOCUS_RING)} aria-label={`Delete achievement ${a.title}`}>
+              <Trash2 className="size-3.5" aria-hidden />
+            </button>
           </li>
         ))}
       </ul>
@@ -254,18 +275,20 @@ export function NetworkingLog({ items, today }: { items: { id: string; date: str
         <Field label="Follow-up" htmlFor="n-f"><Input id="n-f" value={v.followUp} onChange={(e) => setV({ ...v, followUp: e.target.value })} /></Field>
         <Button type="submit" disabled={pending || !v.person.trim()} className="self-end">Log contact</Button>
       </form>
-      <ul className="divide-y divide-border">
-        {items.length === 0 && <li className="py-4 text-sm text-muted-foreground">No contacts logged yet.</li>}
+      <ul className="space-y-2">
+        {items.length === 0 && <li className="rounded-[8px] border-2 border-dashed border-ink px-3 py-4 text-sm text-muted-foreground">No contacts logged yet.</li>}
         {items.map((n) => (
-          <li key={n.id} className="group flex items-start gap-3 py-2.5 text-sm">
-            <span className="w-16 shrink-0 text-xs text-muted-foreground">{formatDate(n.date, "dm")}</span>
+          <li key={n.id} className="group flex items-start gap-3 rounded-[8px] border-2 border-ink bg-card px-3 py-2 text-sm">
+            <span className="w-14 shrink-0 pt-0.5 font-mono text-xs font-medium text-muted-foreground tabular-nums">{formatDate(n.date, "dm")}</span>
             <span className="min-w-0 flex-1">
-              <span className="font-medium">{n.person}</span>
+              <span className="font-semibold">{n.person}</span>
               {n.company && <span className="text-muted-foreground"> · {n.company}</span>}
               {n.channel && <span className="text-xs text-muted-foreground"> · {n.channel}</span>}
               {(n.notes || n.followUp) && <span className="block truncate text-xs text-muted-foreground">{[n.notes, n.followUp && `Follow up: ${n.followUp}`].filter(Boolean).join(" · ")}</span>}
             </span>
-            <button type="button" disabled={pending} onClick={() => run(() => deleteNetworking(n.id))} className="rounded p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive focus-visible:opacity-100" aria-label="Delete contact"><Trash2 className="size-3.5" /></button>
+            <button type="button" disabled={pending} onClick={() => run(() => deleteNetworking(n.id))} className={cn(ROW_ICON_BTN, "-my-1 size-7 shrink-0 hover:bg-block-danger", ON_BLOCK_HOVER, REVEAL_ON_HOVER, FOCUS_RING)} aria-label={`Delete contact ${n.person}`}>
+              <Trash2 className="size-3.5" aria-hidden />
+            </button>
           </li>
         ))}
       </ul>

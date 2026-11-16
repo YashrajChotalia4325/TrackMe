@@ -47,7 +47,7 @@ export function NotificationBell({ items }: { items: NotificationItem[] }) {
               type="button"
               disabled={pending}
               onClick={() => run(() => markNotificationRead("all"), { success: false })}
-              className="flex items-center gap-1 rounded-[6px] px-1.5 py-1 text-xs font-semibold text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-foreground disabled:opacity-50"
+              className="flex h-8 items-center gap-1 rounded-[8px] border-2 border-transparent px-2 text-xs font-semibold text-muted-foreground transition-colors outline-none hover:border-ink hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:opacity-50"
             >
               <CheckCheck aria-hidden className="size-3.5" /> Mark all read
             </button>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Timer } from "lucide-react";
+import { Pause, Timer } from "lucide-react";
 
 export interface ActiveTimer {
   id: string;
@@ -44,10 +44,17 @@ export function LearningTimerPill({ timer }: { timer: ActiveTimer }) {
       className="press flex h-10 shrink-0 items-center gap-2 rounded-full border-2 border-ink bg-block-lime px-3 text-sm text-[#111111] shadow-brutal-sm outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-foreground"
       aria-label={`Learning timer${timer.status === "PAUSED" ? ", paused" : ""} — open AI & Technology`}
     >
-      <Timer aria-hidden className={timer.status === "RUNNING" ? "size-4 animate-pulse motion-reduce:animate-none" : "size-4"} strokeWidth={2.5} />
-      <span className="tabular font-mono font-medium tabular-nums">{formatClock(elapsedSeconds(timer, now))}</span>
+      {timer.status === "PAUSED" ? (
+        <Pause aria-hidden className="size-4" strokeWidth={2.5} />
+      ) : (
+        <Timer aria-hidden className="size-4 animate-pulse motion-reduce:animate-none" strokeWidth={2.5} />
+      )}
+      <span className="font-mono font-medium tabular-nums">{formatClock(elapsedSeconds(timer, now))}</span>
+      {/* The pause icon carries the state on narrow headers; the tag joins it from sm up. */}
       {timer.status === "PAUSED" && (
-        <span className="rounded-full border-2 border-[#111111] bg-[#FFFDF5] px-1.5 text-[10px] leading-4 font-semibold tracking-[0.08em] uppercase">Paused</span>
+        <span aria-hidden className="hidden rounded-full border-2 border-[#111111] bg-[#FFFDF5] px-1.5 text-[10px] leading-4 font-semibold tracking-[0.08em] uppercase sm:inline">
+          Paused
+        </span>
       )}
     </Link>
   );

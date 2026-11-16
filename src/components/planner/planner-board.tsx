@@ -11,7 +11,7 @@ import { MoveDialog } from "@/components/tasks/task-item";
 import { DAY_LABELS, dayOfWeek, formatDuration, formatMinute } from "@/lib/time";
 import type { TaskFormOptions, TaskView } from "@/server/queries";
 import { cn } from "@/lib/utils";
-import { CategorySwatch, FOCUS_RING, ON_BLOCK } from "@/components/tasks/category-style";
+import { CategorySwatch, FOCUS_RING, ON_BLOCK, ON_BLOCK_HOVER, REVEAL_ON_HOVER } from "@/components/tasks/category-style";
 
 export interface PlannerDay {
   date: string;
@@ -70,8 +70,8 @@ export function PlannerBoard({ days, today, options }: { days: PlannerDay[]; tod
                   drop(d.date);
                 }}
                 className={cn(
-                  "flex min-h-[420px] flex-col overflow-hidden rounded-[10px] border-2 border-ink bg-card shadow-brutal transition-colors",
-                  over === d.date && "border-dashed border-block-lime bg-block-lime/15",
+                  "flex min-h-[420px] flex-col overflow-hidden rounded-[10px] border-2 shadow-brutal transition-colors",
+                  over === d.date ? "border-dashed border-block-lime bg-block-lime/15 outline-2 outline-offset-2 outline-foreground" : "border-ink bg-card",
                 )}
               >
                 <header className={cn("border-b-2 border-ink px-3 py-2.5", isToday ? cn("bg-block-sky", ON_BLOCK) : past ? "bg-muted" : "bg-card")}>
@@ -86,8 +86,8 @@ export function PlannerBoard({ days, today, options }: { days: PlannerDay[]; tod
                           "rounded-[6px] border-2 border-ink px-1.5 font-mono text-[11px] leading-4 font-medium tabular-nums",
                           d.score >= 70 ? cn("bg-block-lime", ON_BLOCK) : d.score >= 50 ? cn("bg-block-sun", ON_BLOCK) : "bg-card text-foreground",
                         )}
-                        aria-label={`Score ${Math.round(d.score)}`}
                       >
+                        <span className="sr-only">Score </span>
                         {Math.round(d.score)}
                       </span>
                     )}
@@ -109,7 +109,7 @@ export function PlannerBoard({ days, today, options }: { days: PlannerDay[]; tod
                       {d.fixed
                         .filter((f) => !d.events.some((e) => e.title === f.label))
                         .map((f, i) => (
-                          <div key={i} className="flex items-center gap-1.5 rounded-[6px] border-2 border-dashed border-foreground/40 px-2 py-1 text-[11px] text-muted-foreground">
+                          <div key={i} className="flex items-center gap-1.5 rounded-[6px] border-2 border-dashed border-ink/60 px-2 py-1 text-[11px] text-muted-foreground">
                             <Lock className="size-3 shrink-0" aria-hidden />
                             <span className="shrink-0 font-mono font-medium tabular-nums">{formatMinute(f.start).replace(":00", "")}</span>
                             <span className="truncate">{f.label}</span>
@@ -170,7 +170,9 @@ export function PlannerBoard({ days, today, options }: { days: PlannerDay[]; tod
                               onClick={() => setMoving(t)}
                               aria-label={`Move ${t.title}`}
                               className={cn(
-                                "ml-auto shrink-0 rounded-[6px] border-2 border-ink bg-card px-1.5 leading-4 font-semibold text-foreground transition hover:bg-block-lime hover:text-ink focus-visible:opacity-100 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100",
+                                "ml-auto shrink-0 rounded-[6px] border-2 border-ink bg-card px-1.5 leading-4 font-semibold text-foreground transition hover:bg-block-lime",
+                                ON_BLOCK_HOVER,
+                                REVEAL_ON_HOVER,
                                 FOCUS_RING,
                               )}
                             >
@@ -187,7 +189,7 @@ export function PlannerBoard({ days, today, options }: { days: PlannerDay[]; tod
                       onClick={() => setCreating(d.date)}
                       aria-label={`Add task on ${DAY_LABELS[dayOfWeek(d.date)]} ${d.date}`}
                       className={cn(
-                        "mt-2 flex items-center justify-center gap-1 rounded-[8px] border-2 border-dashed border-foreground/40 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-ink hover:bg-muted hover:text-foreground",
+                        "mt-2 flex items-center justify-center gap-1 rounded-[8px] border-2 border-dashed border-ink/60 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-ink hover:bg-muted hover:text-foreground",
                         FOCUS_RING,
                       )}
                     >

@@ -15,10 +15,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFDF5" },
-    { media: "(prefers-color-scheme: dark)", color: "#141414" },
-  ],
+  // The app defaults to the light theme regardless of OS setting, so the browser bar matches paper.
+  themeColor: "#FFFDF5",
 };
 
 const surfaceToast = "bg-card! text-foreground!";

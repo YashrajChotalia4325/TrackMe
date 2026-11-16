@@ -57,7 +57,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   });
 
   return (
-    <div className="rounded-[10px] border-2 border-ink bg-card p-6 shadow-brutal-lg sm:p-7">
+    <div className="rounded-[10px] border-[3px] border-ink bg-card p-6 shadow-brutal-lg sm:p-7">
       <h2 className="font-display text-2xl leading-tight font-extrabold tracking-[-0.03em]">{isLogin ? "Welcome back" : "Create your account"}</h2>
       <p className="mt-1.5 text-sm text-muted-foreground">{isLogin ? "Sign in to your command centre." : "Takes a minute. Your data stays private to you."}</p>
       <form onSubmit={onSubmit} className="mt-5 grid gap-4" noValidate>
@@ -73,16 +73,12 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <Input id="password" type="password" autoComplete={isLogin ? "current-password" : "new-password"} {...form.register("password")} aria-invalid={!!errors.password} />
         </Field>
         {error && (
-          <p role="alert" className="rounded-[8px] border-2 border-ink bg-[#FF8A8A] px-3 py-2 text-xs font-semibold text-[#111111]">
+          <p role="alert" className="rounded-[8px] border-2 border-ink bg-block-danger px-3 py-2 text-[13px] font-semibold text-[#111111]">
             {error}
           </p>
         )}
-        <Button
-          type="submit"
-          size="lg"
-          disabled={isSubmitting}
-          className="press mt-1 h-11 w-full rounded-[8px] border-2 border-ink bg-primary text-[15px] font-semibold text-primary-foreground shadow-brutal-sm hover:bg-primary"
-        >
+        {/* The default Button variant is the lime press block (2px ink border, 3px hard shadow). */}
+        <Button type="submit" size="lg" disabled={isSubmitting} className="mt-1 w-full">
           {isSubmitting ? "Please wait…" : isLogin ? "Sign in" : "Create account"}
         </Button>
       </form>

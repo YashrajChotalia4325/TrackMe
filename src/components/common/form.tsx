@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 export function Field({ label, htmlFor, error, hint, children, className }: { label: ReactNode; htmlFor?: string; error?: string; hint?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <div className={cn("grid gap-1.5", className)}>
-      <Label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
+      <Label htmlFor={htmlFor} className="text-[13px] font-semibold text-foreground">
         {label}
       </Label>
       {children}
       {error ? (
-        <p className="text-xs text-destructive" role="alert">
+        <p className="text-xs font-medium text-destructive" role="alert">
           {error}
         </p>
       ) : hint ? (
@@ -30,14 +30,14 @@ export const NativeSelect = forwardRef<HTMLSelectElement, SelectHTMLAttributes<H
       <select
         ref={ref}
         className={cn(
-          "h-9 w-full appearance-none rounded-lg border border-input bg-transparent px-3 pr-8 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30 [&>option]:bg-popover",
+          "h-10 w-full appearance-none rounded-[8px] border-2 border-ink bg-card px-3 pr-9 text-sm font-medium text-foreground outline-none transition-[box-shadow,background-color] focus-visible:shadow-brutal-sm focus-visible:ring-3 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-block-danger [&>option]:bg-popover [&>option]:text-popover-foreground",
           className,
         )}
         {...props}
       >
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+      <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-foreground" strokeWidth={2.5} aria-hidden />
     </div>
   );
 });
@@ -57,8 +57,8 @@ export function DayPicker({ value, onChange, label = "Days" }: { value: number[]
             aria-pressed={on}
             onClick={() => onChange(on ? value.filter((x) => x !== d) : [...value, d].sort())}
             className={cn(
-              "h-8 min-w-11 rounded-lg border px-2 text-xs font-medium transition-colors",
-              on ? "border-primary/50 bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-foreground",
+              "h-9 min-w-11 rounded-[8px] border-2 border-ink px-2 text-xs font-semibold transition-[background-color,color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
+              on ? "bg-primary text-primary-foreground shadow-brutal-sm" : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
             {names[d]}
@@ -86,7 +86,7 @@ export function TimeInput({ value, onChange, id, disabled, "aria-label": ariaLab
         const [h, m] = v.split(":").map(Number);
         onChange(h * 60 + m);
       }}
-      className="h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30 dark:[color-scheme:dark]"
+      className="h-10 w-full rounded-[8px] border-2 border-ink bg-card px-3 font-mono text-sm font-medium text-foreground tabular-nums outline-none transition-[box-shadow,background-color] focus-visible:shadow-brutal-sm focus-visible:ring-3 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60 dark:[color-scheme:dark]"
     />
   );
 }

@@ -40,7 +40,7 @@ export default async function PersonalPage() {
         <Stat label="Side project this week" value={formatDuration(sideWeek)} hint={`Flexible 2–4h · target ${formatDuration(sideTarget)}`} icon={Code2} />
         <Stat label="Books finished" value={booksDone} hint={`${reading.filter((r) => r.status === "READING").length} in progress`} icon={BookOpen} />
         <Stat label="Journal entries" value={journal.length >= 10 ? "10+" : journal.length} hint="Recent" icon={NotebookPen} />
-        <Stat label="Communication practice" value={comms} hint={<Link href="/mba" className="underline-offset-4 hover:underline">Logged under MBA</Link>} icon={MessageSquareText} />
+        <Stat label="Communication practice" value={comms} hint={<Link href="/mba" className="underline decoration-2 underline-offset-4 hover:decoration-[3px]">Logged under MBA</Link>} icon={MessageSquareText} />
       </div>
 
       <Panel id="habits" title="Habits" className="scroll-mt-24">

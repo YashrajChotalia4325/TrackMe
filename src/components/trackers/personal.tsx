@@ -52,7 +52,7 @@ export function JournalForm({ today }: { today: string }) {
               aria-label={`Mood ${i + 1} of 5: ${m.label}`}
               title={m.label}
               onClick={() => setMood(on ? null : i + 1)}
-              className={cn("grid size-9 place-items-center rounded-md border-2 transition-colors", focusRing, on ? cn("border-border text-ink shadow-brutal-sm", m.block) : "border-border/30 text-muted-foreground hover:border-border hover:text-foreground")}
+              className={cn("grid size-9 place-items-center rounded-md border-2 transition-colors", focusRing, on ? cn("border-border text-ink shadow-brutal-sm", m.block) : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground")}
             >
               <Icon className="size-[18px]" aria-hidden />
             </button>

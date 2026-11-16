@@ -13,6 +13,7 @@ import { undoVersion } from "@/server/actions/schedule";
 import { CATEGORY_META, SCORED_CATEGORIES, type CategoryKeyT, type ModeT } from "@/lib/domain/constants";
 import { DAY_LABELS, formatDuration, formatMinute } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { chip, dashed, divide, display, inset, num, segItem, segList } from "@/components/config/bold";
 
 type Profile = Record<"displayName" | "location" | "education" | "college" | "graduationTarget" | "currentRole" | "company" | "currentFocus" | "mbaObjective" | "mbaAdmissionTarget" | "creativeAmbition" | "creativeObjective" | "sideProject" | "image", string>;
 
@@ -91,36 +92,36 @@ export function ScheduleForm({ initial }: { initial: ScheduleSettings }) {
       }}
     >
       <section className="grid gap-3 sm:grid-cols-3">
-        <h3 className="text-sm font-semibold sm:col-span-3">Sleep & availability</h3>
+        <h3 className={cn(display, "text-lg tracking-[-0.01em] sm:col-span-3")}>Sleep & availability</h3>
         <Field label="Wake-up" htmlFor="s-wake"><TimeInput id="s-wake" value={v.wakeMinute} onChange={(m) => m != null && setV({ ...v, wakeMinute: m })} /></Field>
         <Field label="Bedtime" htmlFor="s-sleep" hint={`${sleepHours}h protected sleep`}><TimeInput id="s-sleep" value={v.sleepMinute} onChange={(m) => m != null && setV({ ...v, sleepMinute: m })} /></Field>
         <Field label="Sleep target (h)" htmlFor="s-st"><Input id="s-st" type="number" min={4} max={12} step={0.5} value={v.sleepTargetHours} onChange={(e) => setV({ ...v, sleepTargetHours: Number(e.target.value) })} /></Field>
         <Field label="Max focus work / day (h)" htmlFor="s-focus" hint="Excludes lectures & work hours"><Input id="s-focus" type="number" min={0.5} step={0.5} value={v.dailyFocusLimitMin / 60} onChange={(e) => setV({ ...v, dailyFocusLimitMin: Math.round(Number(e.target.value) * 60) })} /></Field>
         <Field label="Max tasks / day" htmlFor="s-tasks"><Input id="s-tasks" type="number" min={1} max={30} value={v.dailyTaskLimit} onChange={(e) => setV({ ...v, dailyTaskLimit: Number(e.target.value) })} /></Field>
         <Field label="Rest between tasks (min)" htmlFor="s-rest"><Input id="s-rest" type="number" min={0} max={60} value={v.minRestBetweenMin} onChange={(e) => setV({ ...v, minRestBetweenMin: Number(e.target.value), breakMinutes: Number(e.target.value) })} /></Field>
-        <label className="flex items-center justify-between gap-3 rounded-xl border border-border p-3 text-sm sm:col-span-3">
-          <span>
+        <label className={cn(inset, "flex items-center justify-between gap-3 p-3 text-sm sm:col-span-3")}>
+          <span className="font-semibold">
             Learn from my history
-            <span className="block text-xs text-muted-foreground">If late-night tasks are often missed, new sessions are placed earlier.</span>
+            <span className="block text-xs font-normal text-muted-foreground">If late-night tasks are often missed, new sessions are placed earlier.</span>
           </span>
           <Switch checked={v.preferEarlierHours} onCheckedChange={(x) => setV({ ...v, preferEarlierHours: x })} aria-label="Learn from history" />
         </label>
       </section>
       <section className="grid gap-3 sm:grid-cols-3">
-        <h3 className="text-sm font-semibold sm:col-span-3">Fitness</h3>
+        <h3 className={cn(display, "text-lg tracking-[-0.01em] sm:col-span-3")}>Fitness</h3>
         <Field label="Gym days" className="sm:col-span-3"><DayPicker value={v.gymDays} onChange={(d) => setV({ ...v, gymDays: d })} label="Gym days" /></Field>
         <Field label="Preferred gym time" htmlFor="s-gym"><TimeInput id="s-gym" value={v.gymPreferredStart} onChange={(m) => setV({ ...v, gymPreferredStart: m })} /></Field>
         <Field label="Gym session (min)" htmlFor="s-gymd"><Input id="s-gymd" type="number" min={15} step={5} value={v.gymDurationMin} onChange={(e) => setV({ ...v, gymDurationMin: Number(e.target.value) })} /></Field>
         <Field label="Water target (ml)" htmlFor="s-water"><Input id="s-water" type="number" min={0} step={250} value={v.waterTargetMl} onChange={(e) => setV({ ...v, waterTargetMl: Number(e.target.value) })} /></Field>
       </section>
       <section className="grid gap-3 sm:grid-cols-3">
-        <h3 className="text-sm font-semibold sm:col-span-3">AI learning targets</h3>
+        <h3 className={cn(display, "text-lg tracking-[-0.01em] sm:col-span-3")}>AI learning targets</h3>
         <Field label="Daily (min)" htmlFor="s-aid"><Input id="s-aid" type="number" min={0} step={5} value={v.aiDailyMin} onChange={(e) => setV({ ...v, aiDailyMin: Number(e.target.value) })} /></Field>
         <Field label="Weekly (h)" htmlFor="s-aiw"><Input id="s-aiw" type="number" min={0} step={0.5} value={v.aiWeeklyMin / 60} onChange={(e) => setV({ ...v, aiWeeklyMin: Math.round(Number(e.target.value) * 60) })} /></Field>
         <Field label="Monthly (h)" htmlFor="s-aim"><Input id="s-aim" type="number" min={0} step={1} value={v.aiMonthlyMin / 60} onChange={(e) => setV({ ...v, aiMonthlyMin: Math.round(Number(e.target.value) * 60) })} /></Field>
       </section>
       <section className="grid gap-3 sm:grid-cols-3">
-        <h3 className="text-sm font-semibold sm:col-span-3">Planning</h3>
+        <h3 className={cn(display, "text-lg tracking-[-0.01em] sm:col-span-3")}>Planning</h3>
         <Field label="Time zone" htmlFor="s-tz">
           <NativeSelect id="s-tz" value={v.timezone} onChange={(e) => setV({ ...v, timezone: e.target.value })}>
             {["Asia/Kolkata", "Asia/Dubai", "Asia/Singapore", "Europe/London", "America/New_York", "UTC"].map((z) => <option key={z} value={z}>{z}</option>)}
@@ -145,9 +146,9 @@ export function WeightsForm({ weights }: { weights: Record<ModeT, Partial<Record
   const total = SCORED_CATEGORIES.reduce((s, k) => s + (w[k] ?? 0), 0);
   return (
     <div className="space-y-4">
-      <div className="flex w-fit rounded-lg border border-border p-0.5" role="tablist" aria-label="Mode">
+      <div className={segList} role="group" aria-label="Weights for mode">
         {(["NORMAL", "EXAM", "RECOVERY"] as ModeT[]).map((m) => (
-          <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={cn("rounded-md px-3 py-1 text-sm", mode === m ? "bg-muted font-medium" : "text-muted-foreground")}>
+          <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className={segItem(mode === m)}>
             {m === "EXAM" ? "Examination" : m.charAt(0) + m.slice(1).toLowerCase()}
           </button>
         ))}
@@ -163,7 +164,9 @@ export function WeightsForm({ weights }: { weights: Record<ModeT, Partial<Record
         <Button disabled={pending || total !== 100} onClick={() => run(() => updateWeights({ mode, weights: w }))}>
           Save {mode.toLowerCase()} weights
         </Button>
-        <span className={cn("tabular text-sm", total === 100 ? "text-success" : "text-warning")}>Total: {total}/100</span>
+        <span className={cn(chip, num, "px-2 py-1 text-xs", total === 100 ? "bg-block-lime" : "bg-block-sun")} aria-live="polite">
+          Total: {total}/100
+        </span>
       </div>
       <p className="text-xs text-muted-foreground">Changes apply from today. Past daily scores keep the weights they were calculated with. Categories without tasks on a given day have their weight redistributed.</p>
     </div>
@@ -175,7 +178,7 @@ export function NewTargetForm({ categories }: { categories: { id: string; name: 
   const [v, setV] = useState({ label: "", categoryId: categories[0]?.id ?? "", unit: "MINUTES", normal: 2, blockMin: 45 });
   return (
     <form
-      className="grid gap-3 rounded-xl border border-dashed border-border p-3 sm:grid-cols-6"
+      className={cn(dashed, "grid gap-3 bg-background p-3 sm:grid-cols-6")}
       onSubmit={(e) => {
         e.preventDefault();
         run(() => createWeeklyTarget({ label: v.label, categoryId: v.categoryId, unit: v.unit, normalTarget: v.unit === "MINUTES" ? Math.round(v.normal * 60) : v.normal, blockMin: v.blockMin }), { onSuccess: () => setV({ ...v, label: "" }) });
@@ -195,7 +198,7 @@ export function NewTargetForm({ categories }: { categories: { id: string; name: 
       </Field>
       <Field label="Per week" htmlFor="nt-n"><Input id="nt-n" type="number" min={0.5} step={0.5} value={v.normal} onChange={(e) => setV({ ...v, normal: Number(e.target.value) })} /></Field>
       <Button type="submit" variant="secondary" disabled={pending || !v.label.trim()} className="self-end">
-        <Plus className="size-4" /> Add
+        <Plus className="size-4" aria-hidden /> Add
       </Button>
     </form>
   );
@@ -213,9 +216,9 @@ export function NotificationPrefs({ prefs }: { prefs: Record<string, boolean> })
     ["weeklyTargets", "Weekly targets falling behind"],
   ];
   return (
-    <ul className="divide-y divide-border">
+    <ul className={divide}>
       {labels.map(([k, l]) => (
-        <li key={k} className="flex items-center justify-between py-2.5 text-sm">
+        <li key={k} className="flex items-center justify-between gap-3 py-2.5 text-sm font-medium">
           {l}
           <Switch checked={prefs[k] !== false} disabled={pending} onCheckedChange={(x) => run(() => updateSettings({ notificationPrefs: { [k]: x } }), { success: false })} aria-label={l} />
         </li>
@@ -229,11 +232,11 @@ export function RecurringList({ items }: { items: { id: string; title: string; d
   const { run, pending } = useAction();
   if (items.length === 0) return <p className="text-sm text-muted-foreground">No recurring tasks. Create one by ticking “Repeat weekly” when adding a task.</p>;
   return (
-    <ul className="divide-y divide-border">
+    <ul className={divide}>
       {items.map((r) => (
-        <li key={r.id} className={cn("flex items-center gap-3 py-2.5 text-sm", !r.active && "opacity-50")}>
+        <li key={r.id} className="flex items-center gap-3 py-2.5 text-sm">
           <span className="min-w-0 flex-1">
-            <span className="font-medium">{r.title}</span>
+            <span className={cn("font-semibold", !r.active && "text-muted-foreground line-through decoration-2")}>{r.title}</span>
             <span className="block text-xs text-muted-foreground">
               {r.category} · {r.daysOfWeek.map((d) => DAY_LABELS[d]).join(", ")} · {r.preferredStart != null ? formatMinute(r.preferredStart) : "any time"} · {formatDuration(r.durationMin)}
             </span>
@@ -243,7 +246,7 @@ export function RecurringList({ items }: { items: { id: string; title: string; d
               Stop
             </Button>
           ) : (
-            <span className="text-xs text-muted-foreground">Stopped</span>
+            <span className={cn(chip, "bg-block-stone")}>Stopped</span>
           )}
         </li>
       ))}
@@ -255,7 +258,7 @@ export function UndoVersionButton({ id }: { id: string }) {
   const { run, pending } = useAction();
   return (
     <Button size="xs" variant="outline" disabled={pending} onClick={() => run(() => undoVersion(id))}>
-      <Undo2 className="size-3" /> Undo
+      <Undo2 className="size-3" aria-hidden /> Undo
     </Button>
   );
 }

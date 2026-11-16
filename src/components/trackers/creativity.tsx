@@ -121,10 +121,10 @@ export function StoryNotes({ project }: { project: ProjectView }) {
   const list = project.notes.filter((n) => n.kind === kind);
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Story notes">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Story note type">
         {KINDS.map((k) => (
-          <button key={k.key} role="tab" aria-selected={kind === k.key} type="button" onClick={() => setKind(k.key)} className={pill(kind === k.key)}>
-            {k.label} <span className={cn(num, "ml-1 text-[10px] opacity-80")}>{project.notes.filter((n) => n.kind === k.key).length}</span>
+          <button key={k.key} aria-pressed={kind === k.key} type="button" onClick={() => setKind(k.key)} className={pill(kind === k.key)}>
+            {k.label} <span className={cn(num, "ml-1 text-[10px]")}>{project.notes.filter((n) => n.kind === k.key).length}</span>
           </button>
         ))}
         <Button size="xs" variant="outline" className="ml-auto" onClick={() => setEditing({ id: null, title: "", body: "" })}>

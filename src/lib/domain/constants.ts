@@ -30,14 +30,14 @@ export const CATEGORY_META: Record<
   CategoryKeyT,
   { name: string; color: string; icon: string; href: string }
 > = {
-  ACADEMICS: { name: "Academics", color: "#60A5FA", icon: "GraduationCap", href: "/academics" },
-  CAREER: { name: "Career", color: "#FACC15", icon: "Briefcase", href: "/career" },
-  AI: { name: "AI & Technology", color: "#A78BFA", icon: "Cpu", href: "/ai" },
-  MBA: { name: "MBA Preparation", color: "#F472B6", icon: "Landmark", href: "/mba" },
-  FITNESS: { name: "Fitness & Health", color: "#22C55E", icon: "Dumbbell", href: "/fitness" },
-  CREATIVITY: { name: "Creativity", color: "#FB923C", icon: "Clapperboard", href: "/creativity" },
-  PERSONAL: { name: "Personal", color: "#2DD4BF", icon: "Sparkles", href: "/personal" },
-  FINANCE: { name: "Finance", color: "#94A3B8", icon: "Wallet", href: "/finance" },
+  ACADEMICS: { name: "Academics", color: "#7CC4FF", icon: "GraduationCap", href: "/academics" },
+  CAREER: { name: "Career", color: "#FFD23F", icon: "Briefcase", href: "/career" },
+  AI: { name: "AI & Technology", color: "#B69CFF", icon: "Cpu", href: "/ai" },
+  MBA: { name: "MBA Preparation", color: "#FF7AB6", icon: "Landmark", href: "/mba" },
+  FITNESS: { name: "Fitness & Health", color: "#C6F432", icon: "Dumbbell", href: "/fitness" },
+  CREATIVITY: { name: "Creativity", color: "#FF9F43", icon: "Clapperboard", href: "/creativity" },
+  PERSONAL: { name: "Personal", color: "#5EE6C8", icon: "Sparkles", href: "/personal" },
+  FINANCE: { name: "Finance", color: "#D9D2C2", icon: "Wallet", href: "/finance" },
 };
 
 export type Weights = Partial<Record<CategoryKeyT, number>>;

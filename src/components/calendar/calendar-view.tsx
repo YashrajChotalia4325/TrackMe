@@ -12,7 +12,7 @@ import { DAY_LABELS, dayOfWeek, formatDuration, formatMinute } from "@/lib/time"
 import { EVENT_TYPE_META } from "@/lib/domain/constants";
 import type { TaskFormOptions, TaskView } from "@/server/queries";
 import { cn } from "@/lib/utils";
-import { FOCUS_RING, ON_BLOCK, categoryBlock } from "@/components/tasks/category-style";
+import { FOCUS_RING, ON_BLOCK, ON_BLOCK_HOVER, REVEAL_ON_HOVER, categoryBlock } from "@/components/tasks/category-style";
 
 const EXAM_TYPES = new Set(["EXAM", "INTERNAL_EXAM", "PRACTICAL_EXAM", "VIVA"]);
 
@@ -62,8 +62,8 @@ export function MonthGrid({ cells, today }: { cells: MonthCell[]; today: string 
                 >
                   {Number(c.date.slice(8))}
                 </Link>
-                <button type="button" onClick={() => setCreatingOn(c.date)} className={cn("grid size-6 place-items-center rounded-[6px] border-2 border-ink bg-card text-sm leading-none font-bold text-foreground opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-block-lime hover:text-ink focus-visible:opacity-100", FOCUS_RING)} aria-label={`Add event on ${c.date}`}>
-                  +
+                <button type="button" onClick={() => setCreatingOn(c.date)} className={cn("grid size-6 place-items-center rounded-[6px] border-2 border-ink bg-card text-sm leading-none font-bold text-foreground transition hover:bg-block-lime", ON_BLOCK_HOVER, REVEAL_ON_HOVER, FOCUS_RING)} aria-label={`Add event on ${c.date}`}>
+                  <span aria-hidden>+</span>
                 </button>
               </div>
               <div className="mt-1 space-y-0.5">
@@ -78,7 +78,7 @@ export function MonthGrid({ cells, today }: { cells: MonthCell[]; today: string 
                       EXAM_TYPES.has(e.type) ? cn("bg-block-sun", ON_BLOCK) : e.type === "HOLIDAY" ? cn("bg-block-lime", ON_BLOCK) : "bg-muted text-foreground",
                     )}
                   >
-                    {!e.allDay && e.startMinute != null && <span className="mr-1 font-mono font-medium tabular-nums opacity-80">{formatMinute(e.startMinute).replace(":00", "")}</span>}
+                    {!e.allDay && e.startMinute != null && <span className="mr-1 font-mono font-medium tabular-nums">{formatMinute(e.startMinute).replace(":00", "")}</span>}
                     {e.title}
                   </button>
                 ))}
@@ -188,7 +188,7 @@ export function WeekTimeGrid({ columns, today, wake, sleep, options, nowMinute }
                   </div>
                 )}
                 {c.fixed.map((f, i) => (
-                  <div key={i} className="absolute inset-x-1 overflow-hidden rounded-[6px] border-2 border-dashed border-foreground/40 bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground" style={{ top: top(f.start), height: Math.max(14, ((f.end - f.start) / 60) * HOUR_PX - 2) }}>
+                  <div key={i} className="absolute inset-x-1 overflow-hidden rounded-[6px] border-2 border-dashed border-ink/60 bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground" style={{ top: top(f.start), height: Math.max(14, ((f.end - f.start) / 60) * HOUR_PX - 2) }}>
                     {f.label}
                   </div>
                 ))}
@@ -222,18 +222,18 @@ export function WeekTimeGrid({ columns, today, wake, sleep, options, nowMinute }
                           FOCUS_RING,
                           categoryBlock(t.categoryKey, t.color),
                           ON_BLOCK,
-                          done && "opacity-60 shadow-none",
+                          done && "opacity-75 shadow-none",
                           drag?.id === t.id && "opacity-30",
                         )}
                         style={{ top: top(t.startMinute!), height: Math.max(16, (t.durationMin / 60) * HOUR_PX - 2) }}
                       >
                         <p className={cn("truncate font-semibold", done && "line-through decoration-2")}>{t.title}</p>
-                        {t.durationMin >= 45 && <p className="truncate font-mono font-medium tabular-nums opacity-80">{formatMinute(t.startMinute)}</p>}
+                        {t.durationMin >= 45 && <p className="truncate font-mono font-medium tabular-nums">{formatMinute(t.startMinute)}</p>}
                       </div>
                     );
                   })}
                 {ghost && ghost.date === c.date && dragTask && (
-                  <div className={cn("pointer-events-none absolute inset-x-1 z-30 rounded-[6px] border-2 border-dashed border-ink bg-block-lime/60 px-1.5 font-mono text-[10px] font-medium tabular-nums", ON_BLOCK)} style={{ top: top(ghost.minute), height: (dragTask.durationMin / 60) * HOUR_PX }}>
+                  <div className={cn("pointer-events-none absolute inset-x-1 z-30 rounded-[6px] border-2 border-dashed border-ink bg-block-lime px-1.5 font-mono text-[10px] font-medium tabular-nums", ON_BLOCK)} style={{ top: top(ghost.minute), height: (dragTask.durationMin / 60) * HOUR_PX }}>
                     {formatMinute(ghost.minute)}
                   </div>
                 )}

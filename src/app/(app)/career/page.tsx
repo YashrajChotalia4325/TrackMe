@@ -37,7 +37,7 @@ export default async function CareerPage() {
       </div>
 
       <Panel title="Upcoming internship & career tasks" description="Next 14 days">
-        {tasks.length === 0 ? <p className="text-sm text-muted-foreground">No career tasks scheduled. Add internship deliverables so the scheduler can protect time for them.</p> : tasks.map((t) => <TaskItem key={t.id} task={toTaskView(t, ctx)} showDate />)}
+        {tasks.length === 0 ? <p className="text-sm text-muted-foreground">No career tasks scheduled. Add internship deliverables so the scheduler can protect time for them.</p> : <div className="space-y-2">{tasks.map((t) => <TaskItem key={t.id} task={toTaskView(t, ctx)} showDate />)}</div>}
       </Panel>
 
       <Tabs defaultValue="jobs">

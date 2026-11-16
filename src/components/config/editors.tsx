@@ -22,6 +22,8 @@ import {
 import { updateWeeklyTarget } from "@/server/actions/settings";
 import { DAY_LABELS, DAY_LABELS_LONG, formatDate, formatDuration, formatMinute } from "@/lib/time";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { code, dashed, display, eyebrow, inset, num, rowIconBtn, subCard, toggleBox } from "@/components/config/bold";
 
 const DAYS_MON_FIRST = [1, 2, 3, 4, 5, 6, 0];
 
@@ -69,7 +71,7 @@ export function TimetableEditor({ slots }: { slots: SlotView[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-6">
+      <div className={cn(inset, "grid gap-3 p-3 sm:grid-cols-6")}>
         <Field label="Day" htmlFor="tt-day" className="sm:col-span-1">
           <NativeSelect id="tt-day" value={day} onChange={(e) => setDay(Number(e.target.value))}>
             {DAYS_MON_FIRST.map((d) => (
@@ -101,10 +103,10 @@ export function TimetableEditor({ slots }: { slots: SlotView[] }) {
         </Field>
         <div className="flex items-end gap-2 sm:col-span-3">
           <Button onClick={add} disabled={pending || !title.trim()} className="flex-1 sm:flex-none">
-            <Plus className="size-4" /> Add slot
+            <Plus className="size-4" aria-hidden /> Add slot
           </Button>
           <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={pending}>
-            <Upload className="size-4" /> Import CSV
+            <Upload className="size-4" aria-hidden /> Import CSV
           </Button>
           <input
             ref={fileRef}
@@ -119,7 +121,7 @@ export function TimetableEditor({ slots }: { slots: SlotView[] }) {
           />
         </div>
         <p className="text-xs text-muted-foreground sm:col-span-6">
-          CSV columns: <code className="rounded bg-muted px-1">day,start,end,subject,location,type</code> — e.g. <code className="rounded bg-muted px-1">Mon,09:00,10:00,Machine Learning,Room 204,LECTURE</code>. From Excel: File → Save As → CSV.
+          CSV columns: <code className={code}>day,start,end,subject,location,type</code> — e.g. <code className={cn(code, "break-all")}>Mon,09:00,10:00,Machine Learning,Room 204,LECTURE</code>. From Excel: File → Save As → CSV.
         </p>
       </div>
       <WeekList
@@ -132,12 +134,12 @@ export function TimetableEditor({ slots }: { slots: SlotView[] }) {
 }
 
 function WeekList({ items, empty, onDelete }: { items: { id: string; day: number; start: number; end: number; label: string; sub?: string | null }[]; empty: string; onDelete: (id: string) => void }) {
-  if (items.length === 0) return <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">{empty}</p>;
+  if (items.length === 0) return <p className={cn(dashed, "px-4 py-6 text-center text-sm text-muted-foreground")}>{empty}</p>;
   return (
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
       {DAYS_MON_FIRST.filter((d) => items.some((i) => i.day === d)).map((d) => (
-        <div key={d} className="rounded-xl border border-border p-3">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">{DAY_LABELS_LONG[d]}</p>
+        <div key={d} className={cn(subCard, "p-3")}>
+          <p className={cn(eyebrow, "mb-2")}>{DAY_LABELS_LONG[d]}</p>
           <ul className="space-y-1">
             {items
               .filter((i) => i.day === d)
@@ -145,14 +147,14 @@ function WeekList({ items, empty, onDelete }: { items: { id: string; day: number
               .map((i) => (
                 <li key={i.id} className="group flex items-center justify-between gap-2 text-sm">
                   <span className="min-w-0">
-                    <span className="tabular text-xs text-muted-foreground">
+                    <span className={cn(num, "text-xs text-muted-foreground")}>
                       {formatMinute(i.start)}–{formatMinute(i.end)}
                     </span>{" "}
-                    <span className="font-medium">{i.label}</span>
+                    <span className="font-semibold">{i.label}</span>
                     {i.sub && <span className="text-xs text-muted-foreground"> · {i.sub}</span>}
                   </span>
-                  <button type="button" onClick={() => onDelete(i.id)} aria-label={`Remove ${i.label} on ${DAY_LABELS_LONG[d]}`} className="rounded p-1 text-muted-foreground hover:text-destructive">
-                    <Trash2 className="size-3.5" />
+                  <button type="button" onClick={() => onDelete(i.id)} aria-label={`Remove ${i.label} on ${DAY_LABELS_LONG[d]}`} className={rowIconBtn}>
+                    <Trash2 className="size-3.5" aria-hidden />
                   </button>
                 </li>
               ))}
@@ -187,13 +189,13 @@ export function WorkEditor({ blocks }: { blocks: { id: string; dayOfWeek: number
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 rounded-xl border border-border p-3">
+      <div className={cn(inset, "grid gap-3 p-3")}>
         <Field label="Days">
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Work days">
             {DAYS_MON_FIRST.map((d) => {
               const on = days.includes(d);
               return (
-                <button key={d} type="button" aria-pressed={on} onClick={() => setDays(on ? days.filter((x) => x !== d) : [...days, d])} className={`h-8 min-w-11 rounded-lg border px-2 text-xs font-medium ${on ? "border-primary/50 bg-primary/15 text-primary" : "border-border text-muted-foreground"}`}>
+                <button key={d} type="button" aria-pressed={on} onClick={() => setDays(on ? days.filter((x) => x !== d) : [...days, d])} className={cn(toggleBox(on), !on && "bg-card")}>
                   {DAY_LABELS[d]}
                 </button>
               );
@@ -212,7 +214,7 @@ export function WorkEditor({ blocks }: { blocks: { id: string; dayOfWeek: number
           </Field>
         </div>
         <Button onClick={add} disabled={pending || start == null || end == null || days.length === 0} className="justify-self-start">
-          <Plus className="size-4" /> Add work hours
+          <Plus className="size-4" aria-hidden /> Add work hours
         </Button>
       </div>
       <WeekList
@@ -250,7 +252,7 @@ export function TargetRow({ target, compact = false }: { target: TargetView; com
   const save = () => run(() => updateWeeklyTarget(t), { onSuccess: () => router.refresh() });
 
   return (
-    <div className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-[1fr_auto] sm:items-end">
+    <div className={cn(subCard, "grid gap-3 p-3 sm:grid-cols-[1fr_auto] sm:items-end")}>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Field label={`${t.label} — normal (${isMin ? "hours/week" : "sessions/week"})`} htmlFor={`${t.id}-n`} className="col-span-2">
           <Input id={`${t.id}-n`} type="number" min={0} step={isMin ? 0.5 : 1} value={toDisplay(t.normalTarget)} onChange={(e) => setT({ ...t, normalTarget: fromDisplay(Number(e.target.value)) })} />
@@ -272,7 +274,7 @@ export function TargetRow({ target, compact = false }: { target: TargetView; com
         )}
       </div>
       <div className="flex items-center gap-3">
-        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
           <Switch checked={t.autoPlan} onCheckedChange={(v) => setT({ ...t, autoPlan: v })} aria-label={`Auto-plan ${t.label}`} /> Auto-plan
         </label>
         <Button size="sm" variant="secondary" onClick={save} disabled={pending}>
@@ -307,22 +309,22 @@ export function ExamEditor({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <p className="text-sm font-medium">Examination periods</p>
+        <h3 className={cn(display, "text-base tracking-[-0.01em]")}>Examination periods</h3>
         {periods.map((p) => (
-          <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-sm">
+          <div key={p.id} className={cn(subCard, "flex items-center justify-between gap-3 px-3 py-2 text-sm")}>
             <span>
-              <span className="font-medium">{p.name}</span>
-              <span className="text-muted-foreground">
+              <span className="font-semibold">{p.name}</span>
+              <span className={cn(num, "text-muted-foreground")}>
                 {" "}
                 · {formatDate(p.startDate, "dm")} – {formatDate(p.endDate)}
               </span>
             </span>
-            <button type="button" onClick={() => run(() => deleteExamPeriod(p.id), { onSuccess: () => router.refresh() })} aria-label={`Remove ${p.name}`} className="rounded p-1 text-muted-foreground hover:text-destructive">
-              <Trash2 className="size-4" />
+            <button type="button" onClick={() => run(() => deleteExamPeriod(p.id), { onSuccess: () => router.refresh() })} aria-label={`Remove ${p.name}`} className={rowIconBtn}>
+              <Trash2 className="size-3.5" aria-hidden />
             </button>
           </div>
         ))}
-        <div className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-4">
+        <div className={cn(inset, "grid gap-3 p-3 sm:grid-cols-4")}>
           <Field label="Name" htmlFor="ep-name" className="sm:col-span-2">
             <Input id="ep-name" value={pName} onChange={(e) => setPName(e.target.value)} />
           </Field>
@@ -338,30 +340,30 @@ export function ExamEditor({
             disabled={pending || !pStart || !pEnd}
             onClick={() => run(() => upsertExamPeriod(null, { name: pName, startDate: pStart, endDate: pEnd, leadDays: 10 }), { onSuccess: () => router.refresh() })}
           >
-            <Plus className="size-4" /> Add exam period
+            <Plus className="size-4" aria-hidden /> Add exam period
           </Button>
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm font-medium">Individual papers, practicals & vivas</p>
+        <h3 className={cn(display, "text-base tracking-[-0.01em]")}>Individual papers, practicals & vivas</h3>
         <p className="text-xs text-muted-foreground">Add them when your timetable is released. They become fixed commitments the scheduler never moves.</p>
         {exams.map((e) => (
-          <div key={e.id} className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-sm">
+          <div key={e.id} className={cn(subCard, "flex items-center justify-between gap-3 px-3 py-2 text-sm")}>
             <span>
-              <span className="font-medium">{e.title}</span>
-              <span className="text-muted-foreground">
+              <span className="font-semibold">{e.title}</span>
+              <span className={cn(num, "text-muted-foreground")}>
                 {" "}
                 · {formatDate(e.date, "weekday")}
                 {e.startMinute != null && `, ${formatMinute(e.startMinute)}`}
               </span>
             </span>
-            <button type="button" onClick={() => run(() => deleteEvent(e.id), { onSuccess: () => router.refresh() })} aria-label={`Remove ${e.title}`} className="rounded p-1 text-muted-foreground hover:text-destructive">
-              <Trash2 className="size-4" />
+            <button type="button" onClick={() => run(() => deleteEvent(e.id), { onSuccess: () => router.refresh() })} aria-label={`Remove ${e.title}`} className={rowIconBtn}>
+              <Trash2 className="size-3.5" aria-hidden />
             </button>
           </div>
         ))}
-        <div className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-6">
+        <div className={cn(inset, "grid gap-3 p-3 sm:grid-cols-6")}>
           <Field label="Subject / title" htmlFor="ex-title" className="sm:col-span-2">
             <Input id="ex-title" value={eTitle} onChange={(e) => setETitle(e.target.value)} placeholder="e.g. Cloud Computing" />
           </Field>
@@ -395,7 +397,7 @@ export function ExamEditor({
               })
             }
           >
-            <Plus className="size-4" /> Add exam
+            <Plus className="size-4" aria-hidden /> Add exam
           </Button>
         </div>
       </div>
