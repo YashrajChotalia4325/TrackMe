@@ -207,14 +207,16 @@ export async function checkAchievements(ctx: UserContext) {
 }
 
 /** Runs once per request from the app layout. Cheap and idempotent. */
-const lastRun = ((globalThis as unknown as { __tmMaint?: Map<string, number> }).__tmMaint ??= new Map());
+/** Housekeeping runs at most once per 10 minutes per day+mode. The stamp lives in the DB so it holds across serverless instances. */
+const MAINTENANCE_EVERY_MS = 10 * 60_000;
 
 export const runMaintenance = cache(async () => {
   const ctx = await getContext();
-  const key = `${ctx.userId}:${ctx.today}:${ctx.mode}`;
-  const last = lastRun.get(key) ?? 0;
-  if (Date.now() - last < 60_000) return ctx; // throttle: at most once a minute per user/day/mode
-  lastRun.set(key, Date.now());
+  const key = `${ctx.today}:${ctx.mode}`;
+  const { maintenanceKey, maintenanceAt } = ctx.settings;
+  if (maintenanceKey === key && maintenanceAt && Date.now() - maintenanceAt.getTime() < MAINTENANCE_EVERY_MS) return ctx;
+  // Claim the slot first so concurrent requests don't all run the full pass.
+  await db.userSettings.update({ where: { userId: ctx.userId }, data: { maintenanceKey: key, maintenanceAt: new Date() } });
   await sweepMissed(ctx);
   await materializeRecurring(ctx);
   // Google / GitHub syncs run after the response is sent so a slow provider never delays a page.
@@ -225,8 +227,9 @@ export const runMaintenance = cache(async () => {
   return ctx;
 });
 
-export function invalidateMaintenance() {
-  lastRun.clear();
+/** Force the next page load to re-run housekeeping (e.g. after a mode change). */
+export async function invalidateMaintenance(userId?: string) {
+  if (userId) await db.userSettings.updateMany({ where: { userId }, data: { maintenanceAt: null } });
 }
 
 export function modeLabel(m: ModeT) {

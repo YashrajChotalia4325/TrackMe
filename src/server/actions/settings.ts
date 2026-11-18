@@ -15,7 +15,7 @@ export async function setMode(mode: "NORMAL" | "EXAM" | "RECOVERY"): Promise<Act
   const ctx = await getContext();
   if (!["NORMAL", "EXAM", "RECOVERY"].includes(mode)) return { ok: false, error: "Unknown mode" };
   await db.userSettings.update({ where: { userId: ctx.userId }, data: { mode, modeChangedAt: new Date(), examSuggestionDismissedAt: mode === "NORMAL" ? new Date() : undefined } });
-  invalidateMaintenance();
+  await invalidateMaintenance(ctx.userId);
   // Today's score is re-weighted for the new mode; past days keep their snapshot.
   await recomputeDailyScore({ ...ctx, mode, weights: (mode === "EXAM" ? ctx.settings.weightsExam : mode === "RECOVERY" ? ctx.settings.weightsRecovery : ctx.settings.weightsNormal) as never }, ctx.today);
   revalidateAll();
