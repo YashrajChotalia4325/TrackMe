@@ -1,3 +1,4 @@
+import { appUrl } from "@/lib/app-url";
 import { AlertTriangle, CalendarDays, Inbox, Mail, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { getContext } from "@/server/context";
@@ -22,6 +23,7 @@ function whenLabel(at: Date, tz: string, today: string): string {
 }
 
 function SetupSteps() {
+  const base = appUrl();
   const steps: ReactNode[] = [
     <>
       Open the <strong>Google Cloud Console</strong> and create a project (any name, e.g. &ldquo;TrackMe&rdquo;).
@@ -35,10 +37,10 @@ function SetupSteps() {
     </>,
     <>
       <strong>Credentials → Create credentials → OAuth client ID</strong>, application type Web application, with the authorised redirect URI{" "}
-      <Code wrap>http://localhost:3000/api/auth/callback/google</Code> (and <Code wrap>https://your-domain/api/auth/callback/google</Code> for production).
+      <Code wrap>{`${base}/api/auth/callback/google`}</Code>.
     </>,
     <>
-      Put <Code>GOOGLE_CLIENT_ID</Code> and <Code>GOOGLE_CLIENT_SECRET</Code> in your <Code>.env</Code> and restart TrackMe. Connect buttons will appear here.
+      Put <Code>GOOGLE_CLIENT_ID</Code> and <Code>GOOGLE_CLIENT_SECRET</Code> as environment variables in your Vercel project (and in <Code>.env</Code> for local use), then redeploy. Connect buttons will appear here.
     </>,
   ];
   return <SetupStepList steps={steps} />;

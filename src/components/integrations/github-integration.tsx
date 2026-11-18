@@ -1,3 +1,4 @@
+import { appUrl } from "@/lib/app-url";
 import { CircleAlert, Flame, GitBranch, GitPullRequest, Info, MessageSquare, Sparkles } from "lucide-react";
 import { getContext } from "@/server/context";
 import { db } from "@/server/db";
@@ -22,21 +23,22 @@ function formatSynced(at: Date, tz: string, today: string) {
 }
 
 function SetupSteps() {
+  const base = appUrl();
   const steps = [
     <>
       On GitHub open <strong>Settings → Developer settings → OAuth Apps → New OAuth App</strong>.
     </>,
     <>
-      Set <strong>Homepage URL</strong> to <Code>http://localhost:3000</Code>.
+      Set <strong>Homepage URL</strong> to <Code>{base}</Code>.
     </>,
     <>
-      Set <strong>Authorization callback URL</strong> to <Code wrap>http://localhost:3000/api/auth/callback/github</Code>.
+      Set <strong>Authorization callback URL</strong> to <Code wrap>{`${base}/api/auth/callback/github`}</Code>.
     </>,
     <>Register the app, then click &ldquo;Generate a new client secret&rdquo;.</>,
     <>
-      Add <Code>GITHUB_CLIENT_ID</Code> and <Code>GITHUB_CLIENT_SECRET</Code> to your <Code>.env</Code> file.
+      Add <Code>GITHUB_CLIENT_ID</Code> and <Code>GITHUB_CLIENT_SECRET</Code> as environment variables in your Vercel project (and in <Code>.env</Code> for local use).
     </>,
-    <>Restart TrackMe, then come back here and click Connect GitHub.</>,
+    <>Redeploy (or restart TrackMe locally), then come back here and click Connect GitHub.</>,
   ];
   return (
     <div className="space-y-4">
