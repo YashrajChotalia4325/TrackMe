@@ -22,7 +22,7 @@ export const DASHBOARD_PANELS: readonly DashboardPanelMeta[] = [
   { id: "habits", label: "Habits", description: "Quick tick list of today's habits.", column: "side" },
   { id: "inbox", label: "Inbox suggestions", description: "Deadlines and to-dos spotted in Gmail (when connected).", column: "side" },
   { id: "quickActions", label: "Quick actions", description: "Add a task, log a workout, start learning and more.", column: "side" },
-  { id: "week", label: "This week", description: "Weekly completion, scores and targets.", column: "side" },
+  { id: "week", label: "This week", description: "Weekly completion, scores and targets.", column: "main" },
   { id: "upcoming", label: "Upcoming", description: "Exams and events in the next 30 days.", column: "side" },
   { id: "goals", label: "Long-term goals", description: "Goal progress from completed milestones.", column: "full" },
 ];

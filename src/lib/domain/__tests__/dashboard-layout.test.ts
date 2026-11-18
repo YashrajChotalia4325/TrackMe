@@ -56,8 +56,8 @@ describe("layoutColumns", () => {
       { id: "score", hidden: false },
     ]);
     const c = layoutColumns(l);
-    expect(c.main).toEqual(["tasks", "score"]);
-    expect(c.side).toEqual(["upcoming", "inbox", "quickActions", "week"]);
+    expect(c.main).toEqual(["tasks", "score", "week"]);
+    expect(c.side).toEqual(["upcoming", "inbox", "quickActions"]);
     expect(c.full).toEqual(["goals"]);
   });
 });
