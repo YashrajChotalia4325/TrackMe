@@ -11,11 +11,12 @@ import type { CategoryKeyT } from "@/lib/domain/constants";
 import type { Goal, Milestone, Task } from "@/generated/prisma/client";
 
 export async function totalXp(userId: string) {
-  const [tasks, ach] = await Promise.all([
-    db.task.findMany({ where: { userId, status: "COMPLETED" }, select: { durationMin: true, completionPct: true } }),
+  // Group by (duration, completion %) so only a handful of rows come back however many tasks are done.
+  const [groups, ach] = await Promise.all([
+    db.task.groupBy({ by: ["durationMin", "completionPct"], where: { userId, status: "COMPLETED" }, _count: { _all: true } }),
     db.userAchievement.findMany({ where: { userId }, include: { achievement: { select: { xp: true } } } }),
   ]);
-  return tasks.reduce((s, t) => s + taskXp(t.durationMin, t.completionPct), 0) + ach.reduce((s, a) => s + a.achievement.xp, 0);
+  return groups.reduce((s, g) => s + taskXp(g.durationMin, g.completionPct) * g._count._all, 0) + ach.reduce((s, a) => s + a.achievement.xp, 0);
 }
 
 export type TaskView = ReturnType<typeof toTaskView>;
